@@ -9,3 +9,19 @@ input.desktop[type=checkbox]{
 input.desktop[type=checkbox]:checked {
     background-color: #ffffff;
 }
+
+#unpin{
+    background-image: url(desktopmmo://assets/unpin.png);
+    background-color: transparent;
+    background-size: contain;
+    border: none;
+    cursor: pointer;
+    display: block;
+    width: 2em;
+    height: 2em;
+    padding: 0;
+
+    position: absolute;
+    right: 1em;
+    bottom: 1em;
+}

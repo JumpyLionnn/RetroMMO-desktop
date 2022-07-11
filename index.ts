@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
+
 
 function createWindow () {
     const win = new BrowserWindow({
@@ -32,6 +33,19 @@ function createWindow () {
 }
 
 app.whenReady().then(() => {
+    
+    protocol.registerFileProtocol('desktopmmo', (request, callback) => {
+        const url = request.url.replace('desktopmmo://', '');
+        try {
+            return callback(decodeURIComponent(url))
+        }
+        catch (error) {
+            // Handle the error as needed
+            console.error(error);
+        }
+    });
+    
+
     createWindow();
 
     app.on('activate', () => {
