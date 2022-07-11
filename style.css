@@ -1,0 +1,11 @@
+input.desktop[type=checkbox]{
+    border: 0.125em solid #ffffff;
+    cursor: pointer;
+    height: 2em;
+    width: 2em;
+    padding: 0.85em;
+}
+
+input.desktop[type=checkbox]:checked {
+    background-color: #ffffff;
+}
