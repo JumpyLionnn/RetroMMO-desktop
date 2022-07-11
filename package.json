@@ -1,0 +1,24 @@
+{
+  "name": "retrommo-desktop",
+  "version": "0.0.1",
+  "description": "a RetroMMO desktop client",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "electron .",
+    "watch": "tsc --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JumpyLionnn/RetroMMO-desktop.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JumpyLionnn/RetroMMO-desktop/issues"
+  },
+  "homepage": "https://github.com/JumpyLionnn/RetroMMO-desktop#readme",
+  "devDependencies": {
+    "@types/electron": "^1.6.10",
+    "@types/node": "^18.0.3",
+    "typescript": "^4.7.4"
+  }
+}
