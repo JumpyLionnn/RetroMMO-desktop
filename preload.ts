@@ -22,19 +22,41 @@ function createElement<T extends HTMLElement>(tag: string, options: {[name: stri
 
 
 window.addEventListener('DOMContentLoaded', () => {
+    const fpsCounter = document.querySelector<HTMLParagraphElement>("#game\\/main\\/screen\\/fps-count")!;
+
+    
+
+    const settingsPanel = document.querySelector<HTMLDivElement>("#game\\/sidebar\\/content\\/settings\\/box")!;
+
+    createElement("h3", {innerText: "Desktop"}, settingsPanel);
+    createElement("label", {innerText: "Hide overlays when pinned", for: "desktop/game/sidebar/content/settings/hide-fps-pinned"}, settingsPanel);
+    
+    const hideFpsWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: "desktop/game/sidebar/content/settings/hide-fps-pinned", class: "desktop"}, settingsPanel);
+    hideFpsWhenPinnedInput.checked = true; // default value
+    const hideFpsWhenPinnedSetting = localStorage.getItem("hide-fps-when-pinned");
+    if(hideFpsWhenPinnedSetting){
+        hideFpsWhenPinnedInput.checked = JSON.parse(hideFpsWhenPinnedSetting);
+    }
+
+    hideFpsWhenPinnedInput.addEventListener("input", () => {
+        fpsCounter.hidden = stayOnTopInput.checked && hideFpsWhenPinnedInput.checked;
+        localStorage.setItem("hide-fps-when-pinned", JSON.stringify(hideFpsWhenPinnedInput.checked));
+    });
+
+
     const actionsPanel = document.querySelector<HTMLDivElement>("#game\\/sidebar\\/content\\/actions\\/box")!;
 
-    const stayOnTopInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: "desktop/game/sidebar/content/settings/top", class: "desktop"});
+    const stayOnTopInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: "desktop/game/sidebar/content/settings/pin", class: "desktop"});
     
-    createElement("label", {for: "desktop/game/sidebar/content/settings/top", innerText: "Stay On Top"}, actionsPanel);
+    createElement("label", {for: "desktop/game/sidebar/content/settings/pin", innerText: "Stay On Top"}, actionsPanel);
     actionsPanel.appendChild(stayOnTopInput);
     
 
-    const fpsCounter = document.querySelector<HTMLParagraphElement>("#game\\/main\\/screen\\/fps-count")!;
 
     stayOnTopInput.addEventListener("input", () => {
         ipcRenderer.send("stayOnTopStateChange", {value: stayOnTopInput.checked});
-        fpsCounter.hidden = stayOnTopInput.checked;
+        fpsCounter.hidden = stayOnTopInput.checked && hideFpsWhenPinnedInput.checked;
     });
+
 });
   
