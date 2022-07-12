@@ -6,7 +6,6 @@ module.exports = {
         index: "./index.ts",
         preload: "./preload.ts"
     },
-    mode: "none",
     module: {
         rules: [
         {
