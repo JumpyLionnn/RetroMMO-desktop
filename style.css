@@ -10,17 +10,34 @@ input.desktop[type=checkbox]:checked {
     background-color: #ffffff;
 }
 
+.always-show-game-cursor *{
+    cursor: url(../../images/template/cursors/default.png), default !important;
+}
+
+.always-show-game-cursor input{
+    cursor: auto !important;
+}
+
+.always-show-game-cursor button, 
+.always-show-game-cursor a,
+.always-show-game-cursor input[type=checkbox], 
+.always-show-game-cursor input[type=submit], 
+.always-show-game-cursor input[type=range]{
+    cursor: url(../../images/template/cursors/pointer.png) 7 2, pointer !important;
+}
+
+
+
 #unpin{
     background-image: url(desktopmmo://assets/unpin.png);
     background-color: transparent;
     background-size: contain;
     border: none;
-    cursor: pointer;
     display: block;
     width: 2em;
     height: 2em;
     padding: 0;
-
+    cursor: url(./images/template/cursors/pointer.png) 7 2, pointer;
     position: absolute;
     right: 1em;
     bottom: 1em;

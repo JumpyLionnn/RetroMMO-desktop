@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
-import { elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, settingKeyPrefix } from './constants';
-import { hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault } from './defaults';
+import { alwaysShowGameCursorSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, settingKeyPrefix } from './constants';
+import { alwaysShowGameCursorDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault } from './defaults';
 import { createElement, toggleDisplay } from './elements';
 
 // might vary between game versions
@@ -52,6 +52,13 @@ window.addEventListener('DOMContentLoaded', () => {
     createElement("label", {innerText: "Hide sidebar when pinned", for: hideSidebarWhenPinnedInputId}, settingsPanel);
     
     const hideSidebarWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: hideSidebarWhenPinnedInputId, class: "desktop", checked: hideSidebarWhenPinnedDefault}, settingsPanel);
+
+
+
+    const alwaysShowGameCursorInputId = elementIdPrefix + "game/sidebar/content/settings/always-show-game-cursor"
+    createElement("label", {innerText: "Always show game cursor", for: alwaysShowGameCursorInputId}, settingsPanel);
+    
+    const alwaysShowGameCursorInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: alwaysShowGameCursorInputId, class: "desktop", checked: alwaysShowGameCursorDefault}, settingsPanel);
     ///////////////////////////////
 
 
@@ -66,6 +73,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if(hideSidebarWhenPinnedSetting){
         hideSidebarWhenPinnedInput.checked = JSON.parse(hideSidebarWhenPinnedSetting);
     }
+    const alwaysShowGameCursorSetting = localStorage.getItem(alwaysShowGameCursorSettingName);
+    if(alwaysShowGameCursorSetting){
+        alwaysShowGameCursorInput.checked = JSON.parse(alwaysShowGameCursorSetting);
+        if(alwaysShowGameCursorInput.checked){
+            document.body.classList.add("always-show-game-cursor");
+        }
+    }
     ////////////////////////////////////
     
 
@@ -79,6 +93,11 @@ window.addEventListener('DOMContentLoaded', () => {
     hideSidebarWhenPinnedInput.addEventListener("input", () => {
         checkDisplay();
         localStorage.setItem(hideSidebarWhenPinnedSettingName, JSON.stringify(hideSidebarWhenPinnedInput.checked));
+    });
+
+    alwaysShowGameCursorInput.addEventListener("input", () => {
+        localStorage.setItem(alwaysShowGameCursorSettingName, JSON.stringify(alwaysShowGameCursorInput.checked));
+        document.body.classList.toggle("always-show-game-cursor");
     });
     ///////////////////////////////////
     
