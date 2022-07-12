@@ -127,12 +127,11 @@ window.addEventListener('DOMContentLoaded', () => {
     // itegration buttons override
     /////////////////////////////////
     document.querySelectorAll(integrationButtonsSelector).forEach((element: Element) => {
-        console.log("element");
         const button = <HTMLButtonElement>element;
         button.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopImmediatePropagation();
-            alert("please use the web client to perform this action(for safety reasons).");
+            alert("Please use the web client to perform this action(for safety reasons).");
         });
     });
     /////////////////////////////////

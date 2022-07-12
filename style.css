@@ -10,7 +10,8 @@ input.desktop[type=checkbox]:checked {
     background-color: #ffffff;
 }
 
-.always-show-game-cursor *{
+/*disabling this behaviour for the game canvas because the game is handling it by it self*/
+.always-show-game-cursor *:not(#game\/main\/screen):not(#game\/main\/screen *):not(input):not(button):not(a){
     cursor: url(../../images/template/cursors/default.png), default !important;
 }
 
