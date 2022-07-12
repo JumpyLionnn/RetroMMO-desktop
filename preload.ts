@@ -9,6 +9,7 @@ const gameMainSelector = "#game\\/main";
 const fpsCounterSelector = "#game\\/main\\/screen\\/fps-count";
 const settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
 const actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
+const integrationButtonsSelector = ".game\\/sidebar\\/content\\/settings\\/integration-button";
 
 
 
@@ -22,6 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const settingsPanel = document.querySelector<HTMLDivElement>(settingsPanelSelector)!;
     const actionsPanel = document.querySelector<HTMLDivElement>(actionsPanelSelector)!;
 
+    
     function checkDisplay(){
         const shouldHideSidebar = stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked;
         toggleDisplay(unpinButton, stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked);
@@ -120,6 +122,20 @@ window.addEventListener('DOMContentLoaded', () => {
         stayOnTopChange();
     });
     //////////////////////
+
+
+    // itegration buttons override
+    /////////////////////////////////
+    document.querySelectorAll(integrationButtonsSelector).forEach((element: Element) => {
+        console.log("element");
+        const button = <HTMLButtonElement>element;
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            alert("please use the web client to perform this action(for safety reasons).");
+        });
+    });
+    /////////////////////////////////
 
 });
   

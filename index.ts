@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol, shell } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
 import { windowTitle, gameUrl, settingKeyPrefix } from './constants';
@@ -35,6 +35,12 @@ function createWindow () {
         fs.readFile("style.css", {encoding: "utf-8"}, (error, css) => {
             win.webContents.insertCSS(css);
         });
+    });
+
+    // handling links from inside the application
+    win.webContents.on('new-window', function(e: Event, url: string) {
+        e.preventDefault();
+        shell.openExternal(url);
     });
 
     // setting up the stay on top feature
