@@ -1,106 +1,106 @@
 import { ipcRenderer } from 'electron';
+import { elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, settingKeyPrefix } from './constants';
+import { hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault } from './defaults';
+import { createElement, toggleDisplay } from './elements';
 
-function createElement<T extends HTMLElement>(tag: string, options: {[name: string]: any} = {}, parent?: HTMLElement): T{
-    const element = document.createElement(tag);
-    if(options.class)
-    {
-        if(typeof options.class == "string"){
-            element.classList.value = options.class;
-        }
-        else if(Array.isArray(options.class)){
-            element.classList.value = options.class.join(" ");
-        }
-    }
-    Object.assign(element, options);
-    delete (<any>element).class;
-    if(parent){
-        parent.appendChild(element);
-    }
-    return <T>element;
-}
+// might vary between game versions
+const sidebarSelector = "#game\\/sidebar";
+const gameMainSelector = "#game\\/main";
+const fpsCounterSelector = "#game\\/main\\/screen\\/fps-count";
+const settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
+const actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
+
+
 
 
 window.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.querySelector<HTMLDivElement>("#game\\/sidebar")!;
-    const gameMain = document.querySelector<HTMLDivElement>("#game\\/main")!;
+    const sidebar = document.querySelector<HTMLDivElement>(sidebarSelector)!;
+    const gameMain = document.querySelector<HTMLDivElement>(gameMainSelector)!;
 
+    const fpsCounter = document.querySelector<HTMLParagraphElement>(fpsCounterSelector)!;
 
-    const fpsCounter = document.querySelector<HTMLParagraphElement>("#game\\/main\\/screen\\/fps-count")!;
+    const settingsPanel = document.querySelector<HTMLDivElement>(settingsPanelSelector)!;
+    const actionsPanel = document.querySelector<HTMLDivElement>(actionsPanelSelector)!;
 
-    const settingsPanel = document.querySelector<HTMLDivElement>("#game\\/sidebar\\/content\\/settings\\/box")!;
+    function checkDisplay(){
+        const shouldHideSidebar = stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked;
+        toggleDisplay(unpinButton, stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked);
+        toggleDisplay(sidebar, !shouldHideSidebar);
 
-    createElement("h3", {innerText: "Desktop"}, settingsPanel);
-    createElement("label", {innerText: "Hide overlays when pinned", for: "desktop/game/sidebar/content/settings/hide-sidebar-pinned"}, settingsPanel);
-    
-    const hideOverlayWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: "desktop/game/sidebar/content/settings/hide-sidebar-pinned", class: "desktop"}, settingsPanel);
-    hideOverlayWhenPinnedInput.checked = true; // default value
-    const hideOverlayWhenPinnedSetting = localStorage.getItem("hide-overlay-when-pinned");
-    if(hideOverlayWhenPinnedSetting){
-        hideOverlayWhenPinnedInput.checked = JSON.parse(hideOverlayWhenPinnedSetting);
+        toggleDisplay(fpsCounter, !(stayOnTopInput.checked && hideOverlayWhenPinnedInput.checked));
     }
-
-    hideOverlayWhenPinnedInput.addEventListener("input", () => {
-        fpsCounter.hidden = stayOnTopInput.checked && hideOverlayWhenPinnedInput.checked;
-        localStorage.setItem("hide-overlay-when-pinned", JSON.stringify(hideOverlayWhenPinnedInput.checked));
-    });
-
-    createElement("label", {innerText: "Hide sidebar when pinned", for: "desktop/game/sidebar/content/settings/hide-sidebar-pinned"}, settingsPanel);
-    
-    const hideSidebarWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: "desktop/game/sidebar/content/settings/hide-sidebar-pinned", class: "desktop"}, settingsPanel);
-    hideSidebarWhenPinnedInput.checked = true; // default value
-    const hideSidebarWhenPinnedSetting = localStorage.getItem("hide-sidebar-when-pinned");
-    if(hideSidebarWhenPinnedSetting){
-        hideSidebarWhenPinnedInput.checked = JSON.parse(hideSidebarWhenPinnedSetting);
-    }
-
-    hideSidebarWhenPinnedInput.addEventListener("input", () => {
-        hideUnpinButton(!(stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked));
-        if( stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked)
-            sidebar.style.setProperty("display", "none");
-        else
-            sidebar.style.removeProperty("display");
-        localStorage.setItem("hide-sidebar-when-pinned", JSON.stringify(hideSidebarWhenPinnedInput.checked));
-
-    });
-
-
-    const actionsPanel = document.querySelector<HTMLDivElement>("#game\\/sidebar\\/content\\/actions\\/box")!;
-
-    const stayOnTopInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: "desktop/game/sidebar/content/settings/pin", class: "desktop"});
-    
-    createElement("label", {for: "desktop/game/sidebar/content/settings/pin", innerText: "Stay On Top"}, actionsPanel);
-    actionsPanel.appendChild(stayOnTopInput);
-    
 
     function stayOnTopChange(){
         ipcRenderer.send("stayOnTopStateChange", {value: stayOnTopInput.checked});
-        fpsCounter.hidden = stayOnTopInput.checked && hideOverlayWhenPinnedInput.checked;
-        hideUnpinButton(!(stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked));
-        if(stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked)
-            sidebar.style.setProperty("display", "none");
+        checkDisplay();
         
-        else
-            sidebar.style.removeProperty("display");
-        
+        // to resize the canvas from the actual game
         window.dispatchEvent(new UIEvent("resize"));
     }
+    
+
+    // settings ui
+    /////////////////////
+    createElement("h3", {innerText: "Desktop"}, settingsPanel);
+
+    const hideOverlayWhenPinnedInputId = elementIdPrefix + "game/sidebar/content/settings/hide-sidebar-pinned";
+    createElement("label", {innerText: "Hide overlays when pinned", for: hideOverlayWhenPinnedInputId}, settingsPanel); 
+    const hideOverlayWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: elementIdPrefix + "game/sidebar/content/settings/hide-sidebar-pinned", class: "desktop", checked: hideOverlaysWhenPinnedDefault}, settingsPanel);
+    
+
+    const hideSidebarWhenPinnedInputId = elementIdPrefix + "game/sidebar/content/settings/hide-sidebar-pinned"
+    createElement("label", {innerText: "Hide sidebar when pinned", for: hideSidebarWhenPinnedInputId}, settingsPanel);
+    
+    const hideSidebarWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: hideSidebarWhenPinnedInputId, class: "desktop", checked: hideSidebarWhenPinnedDefault}, settingsPanel);
+    ///////////////////////////////
 
 
-    stayOnTopInput.addEventListener("input", stayOnTopChange);
-
-
-    function hideUnpinButton(value: boolean){
-        if(value)
-            unpinButton.style.setProperty("display", "none");
-        else
-            unpinButton.style.removeProperty("display");
+    // loading saved settings if exist
+    ///////////////////////////////////
+    const hideOverlayWhenPinnedSetting = localStorage.getItem(hideOverlayWhenPinnedSettingName);
+    if(hideOverlayWhenPinnedSetting){
+        hideOverlayWhenPinnedInput.checked = JSON.parse(hideOverlayWhenPinnedSetting);
     }
+    
+    const hideSidebarWhenPinnedSetting = localStorage.getItem(hideSidebarWhenPinnedSettingName);
+    if(hideSidebarWhenPinnedSetting){
+        hideSidebarWhenPinnedInput.checked = JSON.parse(hideSidebarWhenPinnedSetting);
+    }
+    ////////////////////////////////////
+    
+
+    // listening for settings change
+    ///////////////////////////////////
+    hideOverlayWhenPinnedInput.addEventListener("input", () => {
+        checkDisplay();
+        localStorage.setItem(hideOverlayWhenPinnedSettingName, JSON.stringify(hideOverlayWhenPinnedInput.checked));
+    });
+
+    hideSidebarWhenPinnedInput.addEventListener("input", () => {
+        checkDisplay();
+        localStorage.setItem(hideSidebarWhenPinnedSettingName, JSON.stringify(hideSidebarWhenPinnedInput.checked));
+    });
+    ///////////////////////////////////
+    
+    
+    // actions ui
+    ////////////////////
+    createElement("label", {for: "desktop/game/sidebar/content/settings/pin", innerText: "Stay On Top"}, actionsPanel);
+    const stayOnTopInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: "desktop/game/sidebar/content/settings/pin", class: "desktop"}, actionsPanel);
+    stayOnTopInput.addEventListener("input", stayOnTopChange);
+    ////////////////////
+
+
+
+    // overlay
+    ///////////////////////
     const unpinButton = createElement("button", {id: "unpin"}, gameMain);
-    unpinButton.style.setProperty("display", "none");
+    toggleDisplay(unpinButton, false);
     unpinButton.addEventListener("click", () => {
         stayOnTopInput.checked = false;
         stayOnTopChange();
     });
+    //////////////////////
 
 });
   

@@ -1,24 +1,26 @@
 import { app, BrowserWindow, ipcMain, protocol } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
+import { windowTitle, gameUrl, settingKeyPrefix } from './constants';
 
 
+// local storage
+///////////////////
 async function getLocalStorage(win: BrowserWindow, key: string): Promise<string | null>{
-    return await win.webContents.executeJavaScript(`localStorage.getItem("${key}");`, true);
+    return await win.webContents.executeJavaScript(`localStorage.getItem("${settingKeyPrefix + key}");`, true);
 }
-
 async function setLocalStorage(win: BrowserWindow, key: string, value: string | null){
-    await win.webContents.executeJavaScript(`localStorage.setItem("${key}", "${value?.replaceAll("\"", "\\\"")}");`, true);
+    await win.webContents.executeJavaScript(`localStorage.setItem("${settingKeyPrefix + key}", "${value?.replaceAll("\"", "\\\"")}");`, true);
 }
+////////////////////
 
 
 function createWindow () {
     const win = new BrowserWindow({
-        title: "RetroMMO",
+        title: windowTitle,
         webPreferences: {
         preload: path.join(__dirname, 'preload.js')
         }
-        
     });
     
     
@@ -28,20 +30,25 @@ function createWindow () {
     win.webContents.openDevTools();
     
    
-    win.loadURL("https://retrommo2.herokuapp.com");
+    win.loadURL(gameUrl);
     win.webContents.on('did-finish-load', () => {
         fs.readFile("style.css", {encoding: "utf-8"}, (error, css) => {
             win.webContents.insertCSS(css);
         });
     });
 
+    // setting up the stay on top feature
+    ///////////////////////////////////////
+    // non pinned size
+    // for restoring this size after an unpin
     let regularSize = win.getSize();
     let regularPosition = win.getPosition();
 
+    // window starts maximized
     win.maximize();
     let maximized = win.isMaximized();
 
-    ipcMain.addListener("stayOnTopStateChange", async (event, state: {value: boolean}) => {
+    ipcMain.addListener("stayOnTopStateChange", async (event: any, state: {value: boolean}) => {
         win.setAlwaysOnTop(state.value);
         if(state.value){
             const pinnedSizeStr = await getLocalStorage(win, "pinnedSize");
@@ -85,7 +92,7 @@ function createWindow () {
 
 app.whenReady().then(() => {
     
-    protocol.registerFileProtocol('desktopmmo', (request, callback) => {
+    protocol.registerFileProtocol('desktopmmo', (request: any, callback: any) => {
         const url = request.url.replace('desktopmmo://', '');
         try {
             return callback(decodeURIComponent(url))
