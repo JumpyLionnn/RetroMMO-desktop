@@ -1,7 +1,8 @@
 import { ipcRenderer } from 'electron';
-import { alwaysShowGameCursorSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, settingKeyPrefix } from './constants';
-import { alwaysShowGameCursorDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault } from './defaults';
+import { alwaysShowGameCursorSettingName, censorChatSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, settingKeyPrefix } from './constants';
+import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault } from './defaults';
 import { createElement, toggleDisplay } from './elements';
+import Filter from "bad-words";
 
 // might vary between game versions
 const sidebarSelector = "#game\\/sidebar";
@@ -10,6 +11,7 @@ const fpsCounterSelector = "#game\\/main\\/screen\\/fps-count";
 const settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
 const actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
 const integrationButtonsSelector = ".game\\/sidebar\\/content\\/settings\\/integration-button";
+const chatBoxSelector = "#game\\/sidebar\\/content\\/chat\\/box";
 
 
 
@@ -22,6 +24,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const settingsPanel = document.querySelector<HTMLDivElement>(settingsPanelSelector)!;
     const actionsPanel = document.querySelector<HTMLDivElement>(actionsPanelSelector)!;
+
+    const chatBox = document.querySelector<HTMLDivElement>(chatBoxSelector)!;
 
     
     function checkDisplay(){
@@ -52,15 +56,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const hideSidebarWhenPinnedInputId = elementIdPrefix + "game/sidebar/content/settings/hide-sidebar-pinned"
     createElement("label", {innerText: "Hide sidebar when pinned", for: hideSidebarWhenPinnedInputId}, settingsPanel);
-    
     const hideSidebarWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: hideSidebarWhenPinnedInputId, class: "desktop", checked: hideSidebarWhenPinnedDefault}, settingsPanel);
 
 
 
     const alwaysShowGameCursorInputId = elementIdPrefix + "game/sidebar/content/settings/always-show-game-cursor"
     createElement("label", {innerText: "Always show game cursor", for: alwaysShowGameCursorInputId}, settingsPanel);
-    
     const alwaysShowGameCursorInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: alwaysShowGameCursorInputId, class: "desktop", checked: alwaysShowGameCursorDefault}, settingsPanel);
+
+    const censorChatInputId = elementIdPrefix + "game/sidebar/content/settings/always-show-game-cursor"
+    createElement("label", {innerText: "Censor chat(slow)", for: censorChatInputId}, settingsPanel);
+    const censorChatInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: censorChatInputId, class: "desktop", checked: censorChatDefault}, settingsPanel);
     ///////////////////////////////
 
 
@@ -101,6 +107,9 @@ window.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(alwaysShowGameCursorSettingName, JSON.stringify(alwaysShowGameCursorInput.checked));
         document.body.classList.toggle("always-show-game-cursor");
     });
+    censorChatInput.addEventListener("input", () => {
+        localStorage.setItem(censorChatSettingName, JSON.stringify(censorChatInput.checked));
+    });
     ///////////////////////////////////
     
     
@@ -135,6 +144,29 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
     /////////////////////////////////
+
+
+    // basic chat censoring
+    ///////////////////
+    const filter = new Filter();
+    const newMessageObserver = new MutationObserver((mutationList, observer) => {
+        if(!censorChatInput.checked) return;
+        for(const mutation of mutationList) {
+            mutation.addedNodes.forEach((node: Node) => {
+                const element = <HTMLParagraphElement>node;
+                if(element.classList.contains("message")){
+                    element.querySelectorAll("span.contents").forEach((element: Element) => {
+                        const span = <HTMLSpanElement>element;
+                        span.innerText = filter.clean(span.innerText);
+                    });
+                    
+                }
+            });
+            
+        }
+    });
+    newMessageObserver.observe(chatBox, { childList: true });
+    ///////////////////
 
 });
   

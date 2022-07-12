@@ -2,10 +2,11 @@
 a RetroMMO desktop client with a lot of features.
 
 ## Features
-* pin the game screen on top all of the windows.
-* hide sidebar and overlays when pinned.
-* always show the game cursor in every element.
-* extra security for integrations
+* Pin the game screen on top all of the windows.
+* Hide sidebar and overlays when pinned.
+* Always show the game cursor in every element.
+* Extra security for integrations.
+* A basic chat censoring
 
 
 ## Downloading the repository
