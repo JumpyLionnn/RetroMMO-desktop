@@ -7,6 +7,7 @@ a RetroMMO desktop client with a lot of features.
 * Always show the game cursor in every element.
 * Extra security for integrations.
 * A basic chat censoring
+* ping sound effect
 
 
 ## Downloading the repository

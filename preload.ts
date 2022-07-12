@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
-import { alwaysShowGameCursorSettingName, censorChatSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, settingKeyPrefix } from './constants';
-import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault } from './defaults';
+import { alwaysShowGameCursorSettingName, censorChatSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, pingSoundEffectSettingName, settingKeyPrefix } from './constants';
+import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault, pingSoundEffectDefault } from './defaults';
 import { createElement, toggleDisplay } from './elements';
 import Filter from "bad-words";
 
@@ -12,9 +12,10 @@ const settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
 const actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
 const integrationButtonsSelector = ".game\\/sidebar\\/content\\/settings\\/integration-button";
 const chatBoxSelector = "#game\\/sidebar\\/content\\/chat\\/box";
+const soundEffectVolumeSliderSelector = "#game\\/sidebar\\/content\\/settings\\/sfx-volume";
 
 
-
+const pingSoundEffect = new Audio("desktopmmo://assets/ping.mp3");
 
 window.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector<HTMLDivElement>(sidebarSelector)!;
@@ -26,6 +27,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const actionsPanel = document.querySelector<HTMLDivElement>(actionsPanelSelector)!;
 
     const chatBox = document.querySelector<HTMLDivElement>(chatBoxSelector)!;
+
+    const soundEffectVolumeSlider = document.querySelector<HTMLInputElement>(soundEffectVolumeSliderSelector)!;
 
     
     function checkDisplay(){
@@ -59,14 +62,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const hideSidebarWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: hideSidebarWhenPinnedInputId, class: "desktop", checked: hideSidebarWhenPinnedDefault}, settingsPanel);
 
 
-
     const alwaysShowGameCursorInputId = elementIdPrefix + "game/sidebar/content/settings/always-show-game-cursor"
     createElement("label", {innerText: "Always show game cursor", for: alwaysShowGameCursorInputId}, settingsPanel);
     const alwaysShowGameCursorInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: alwaysShowGameCursorInputId, class: "desktop", checked: alwaysShowGameCursorDefault}, settingsPanel);
 
-    const censorChatInputId = elementIdPrefix + "game/sidebar/content/settings/always-show-game-cursor"
+    const censorChatInputId = elementIdPrefix + "game/sidebar/content/settings/censor-chat"
     createElement("label", {innerText: "Censor chat(slow)", for: censorChatInputId}, settingsPanel);
     const censorChatInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: censorChatInputId, class: "desktop", checked: censorChatDefault}, settingsPanel);
+
+    const pingSoundEffectInputId = elementIdPrefix + "game/sidebar/content/settings/ping-sound-effect"
+    createElement("label", {innerText: "Ping sound effect", for: pingSoundEffectInputId}, settingsPanel);
+    const pingSoundEffectInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: pingSoundEffectInputId, class: "desktop", checked: pingSoundEffectDefault}, settingsPanel);
     ///////////////////////////////
 
 
@@ -87,6 +93,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if(alwaysShowGameCursorInput.checked){
             document.body.classList.add("always-show-game-cursor");
         }
+    }
+    const censorChatSetting = localStorage.getItem(censorChatSettingName);
+    if(censorChatSetting){
+        censorChatInput.checked = JSON.parse(censorChatSetting);
+    }
+    const pingSoundEffectSetting = localStorage.getItem(pingSoundEffectSettingName);
+    if(pingSoundEffectSetting){
+        pingSoundEffectInput.checked = JSON.parse(pingSoundEffectSetting);
     }
     ////////////////////////////////////
     
@@ -109,6 +123,9 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     censorChatInput.addEventListener("input", () => {
         localStorage.setItem(censorChatSettingName, JSON.stringify(censorChatInput.checked));
+    });
+    pingSoundEffectInput.addEventListener("input", () => {
+        localStorage.setItem(pingSoundEffectSettingName, JSON.stringify(pingSoundEffectInput.checked));
     });
     ///////////////////////////////////
     
@@ -146,7 +163,7 @@ window.addEventListener('DOMContentLoaded', () => {
     /////////////////////////////////
 
 
-    // basic chat censoring
+    // basic chat censoring & ping sound effect
     ///////////////////
     const filter = new Filter();
     const newMessageObserver = new MutationObserver((mutationList, observer) => {
@@ -154,18 +171,29 @@ window.addEventListener('DOMContentLoaded', () => {
         for(const mutation of mutationList) {
             mutation.addedNodes.forEach((node: Node) => {
                 const element = <HTMLParagraphElement>node;
-                if(element.classList.contains("message")){
-                    element.querySelectorAll("span.contents").forEach((element: Element) => {
-                        const span = <HTMLSpanElement>element;
-                        span.innerText = filter.clean(span.innerText);
-                    });
-                    
+                if(element.classList.contains("highlight") && pingSoundEffectInput.checked){
+                    pingSoundEffect.play();
                 }
+
+                if(censorChatInput.checked){
+                    if(element.classList.contains("message")){
+                        element.querySelectorAll("span.contents").forEach((element: Element) => {
+                            const span = <HTMLSpanElement>element;
+                            span.innerText = filter.clean(span.innerText);
+                        });
+                    }
+                }
+                
             });
             
         }
     });
     newMessageObserver.observe(chatBox, { childList: true });
+
+    pingSoundEffect.volume = parseInt(soundEffectVolumeSlider.value) / 100;
+    soundEffectVolumeSlider.addEventListener("input", () => {
+        pingSoundEffect.volume = parseInt(soundEffectVolumeSlider.value) / 100;
+    });
     ///////////////////
 
 });

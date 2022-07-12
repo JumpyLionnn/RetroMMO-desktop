@@ -9,3 +9,4 @@ export const hideOverlayWhenPinnedSettingName = settingKeyPrefix + "hide-overlay
 export const hideSidebarWhenPinnedSettingName = settingKeyPrefix + "hide-sidebar-when-pinned";
 export const alwaysShowGameCursorSettingName = settingKeyPrefix + "always-show-game-cursor";
 export const censorChatSettingName = settingKeyPrefix + "censor-chat";
+export const pingSoundEffectSettingName = settingKeyPrefix + "ping-sound-effect";
