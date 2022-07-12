@@ -133,8 +133,30 @@ window.addEventListener('DOMContentLoaded', () => {
     // actions ui
     ////////////////////
     createElement("label", {for: "desktop/game/sidebar/content/settings/pin", innerText: "Stay On Top"}, actionsPanel);
-    const stayOnTopInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: "desktop/game/sidebar/content/settings/pin", class: "desktop"}, actionsPanel);
+    const stayOnTopInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: elementIdPrefix + "game/sidebar/content/settings/pin", class: "desktop"}, actionsPanel);
     stayOnTopInput.addEventListener("input", stayOnTopChange);
+    ////////////////////
+
+
+    // jump down button
+    const chatContainer = createElement("div", {id: "chat-container"});
+    chatBox.parentElement!.insertBefore(chatContainer, chatBox);
+    chatBox.remove();
+    chatContainer.appendChild(chatBox);
+
+
+    const jumpDownButton = createElement("button", {id: "jump-down-button"}, chatContainer);
+    toggleDisplay(jumpDownButton, false);
+    jumpDownButton.addEventListener("click", () => {
+        chatBox.scrollTo({
+            behavior: "smooth",
+            top: chatBox.scrollHeight
+        });
+    });
+
+    chatBox.addEventListener("scroll", () => {
+        toggleDisplay(jumpDownButton, chatBox.scrollHeight - (chatBox.scrollTop + chatBox.clientHeight) > 100);
+    });
     ////////////////////
 
 

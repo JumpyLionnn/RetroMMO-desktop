@@ -6,8 +6,9 @@ a RetroMMO desktop client with a lot of features.
 * Hide sidebar and overlays when pinned.
 * Always show the game cursor in every element.
 * Extra security for integrations.
-* A basic chat censoring
-* ping sound effect
+* A basic chat censoring.
+* ping sound effect.
+* jump to the bottom of the chat when scrolling.
 
 
 ## Downloading the repository
