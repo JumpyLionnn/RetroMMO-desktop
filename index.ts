@@ -18,6 +18,7 @@ async function setLocalStorage(win: BrowserWindow, key: string, value: string | 
 function createWindow () {
     const win = new BrowserWindow({
         title: windowTitle,
+        icon: "./assets/favicon.png",
         webPreferences: {
         preload: path.join(__dirname, 'preload.js')
         }
