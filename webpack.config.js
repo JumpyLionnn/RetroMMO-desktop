@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require("webpack");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = ({context, request}, cb) => {
     return {
@@ -13,6 +14,18 @@ module.exports = ({context, request}, cb) => {
             RELEASE: cb.mode == "production",
             DEBUG: cb.mode == "development",
           }),
+          new CopyWebpackPlugin({
+            patterns: [
+              { 
+                from: path.resolve(__dirname, 'assets/'), 
+                to: path.resolve(__dirname, 'dist/assets/') 
+              },
+              { 
+                from: path.resolve(__dirname, 'style.css'), 
+                to: path.resolve(__dirname, 'dist/style.css') 
+              },
+            ]
+          })
         ],
         module: {
             rules: [

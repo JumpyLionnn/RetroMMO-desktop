@@ -20,8 +20,13 @@ const loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/b
 const playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
 const playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
 
-
 const pingSoundEffect = new Audio("desktopmmo://assets/ping.mp3");
+
+
+// for backend log package
+ipcRenderer.on("log", (event, message) => {
+    console.log("backend:", message);
+});
 
 window.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector<HTMLDivElement>(sidebarSelector)!;
@@ -43,7 +48,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const playerBoxTitle = document.querySelector(playerBoxTitleSelector)!;
     const playerListBox = document.querySelector(playerListBoxSelector)!;
-
     
     function checkDisplay(){
         const shouldHideSidebar = stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked;

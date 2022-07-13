@@ -6,6 +6,9 @@ import Store from "electron-store";
 
 let store: Store;
 
+function clientLog(win: BrowserWindow, message: string){
+    win.webContents.send("log", message);
+}
 
 function createWindow () {
     const win = new BrowserWindow({
@@ -25,7 +28,11 @@ function createWindow () {
    
     win.loadURL(gameUrl);
     win.webContents.on('did-finish-load', () => {
-        fs.readFile("style.css", {encoding: "utf-8"}, (error, css) => {
+        fs.readFile(path.resolve(__dirname, "style.css"), {encoding: "utf-8"}, (error, css) => {
+            if(error){
+                console.error("error:", error);
+                clientLog(win,"error: " + error);
+            }  
             win.webContents.insertCSS(css);
         });
     });
@@ -80,8 +87,8 @@ function createWindow () {
                 store.set("login.email", safeStorage.encryptString(login.email));
             }
             catch{
-                // still uses a basic encryption
-                store.set("login.email", login.email);
+                console.error("error: encryption failed");
+                clientLog(win, "error: encryption failed");
             }
         }
         else{
@@ -98,6 +105,8 @@ function createWindow () {
                     event.returnValue = safeStorage.decryptString(Buffer.from(email, "utf-8"));
                 }
                 catch{
+                    console.error("error: decryption failed.");
+                    clientLog(win,"error: decryption failed.");
                     event.returnValue = undefined;
                 }
 
@@ -130,7 +139,7 @@ app.whenReady().then(() => {
     protocol.registerFileProtocol('desktopmmo', (request: any, callback: any) => {
         const url = request.url.replace('desktopmmo://', '');
         try {
-            return callback(decodeURIComponent(url))
+            return callback(decodeURIComponent(path.resolve(__dirname, url)))
         }
         catch (error) {
             // Handle the error as needed
