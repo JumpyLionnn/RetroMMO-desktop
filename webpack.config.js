@@ -21,8 +21,8 @@ module.exports = ({context, request}, cb) => {
                 to: path.resolve(__dirname, 'dist/assets/') 
               },
               { 
-                from: path.resolve(__dirname, 'style.css'), 
-                to: path.resolve(__dirname, 'dist/style.css') 
+                from: path.resolve(__dirname, 'css/'), 
+                to: path.resolve(__dirname, 'dist/css/') 
               },
             ]
           })

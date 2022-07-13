@@ -28,7 +28,7 @@ function createWindow () {
    
     win.loadURL(gameUrl);
     win.webContents.on('did-finish-load', () => {
-        fs.readFile(path.resolve(__dirname, "style.css"), {encoding: "utf-8"}, (error, css) => {
+        fs.readFile(path.resolve(__dirname, "css/style.css"), {encoding: "utf-8"}, (error, css) => {
             if(error){
                 console.error("error:", error);
                 clientLog(win,"error: " + error);

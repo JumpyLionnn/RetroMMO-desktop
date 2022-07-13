@@ -30,7 +30,7 @@ input.desktop[type=checkbox]:checked {
 
 
 #unpin{
-    background-image: url(desktopmmo://assets/unpin.png);
+    background-image: url(desktopmmo://assets/images/unpin.png);
     background-color: transparent;
     background-size: contain;
     border: none;
@@ -60,7 +60,7 @@ input.desktop[type=checkbox]:checked {
     position: absolute;
     bottom: 1em;
     left: 1em;
-    background-image: url(desktopmmo://assets/downArrow.png);
+    background-image: url(desktopmmo://assets/images/downArrow.png);
     background-color: black;
     background-size: contain;
     border: 2px solid white;

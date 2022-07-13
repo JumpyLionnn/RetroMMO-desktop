@@ -20,7 +20,7 @@ const loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/b
 const playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
 const playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
 
-const pingSoundEffect = new Audio("desktopmmo://assets/ping.mp3");
+const pingSoundEffect = new Audio("desktopmmo://assets/audio/ping.mp3");
 
 
 // for backend log package
