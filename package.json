@@ -27,6 +27,7 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
-    "bad-words": "^3.0.4"
+    "bad-words": "^3.0.4",
+    "electron-store": "^8.0.2"
   }
 }

@@ -2,18 +2,9 @@ import { app, BrowserWindow, ipcMain, protocol, shell } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
 import { windowTitle, gameUrl, settingKeyPrefix } from './constants';
+import Store from "electron-store";
 
-
-// local storage
-///////////////////
-async function getLocalStorage(win: BrowserWindow, key: string): Promise<string | null>{
-    return await win.webContents.executeJavaScript(`localStorage.getItem("${settingKeyPrefix + key}");`, true);
-}
-async function setLocalStorage(win: BrowserWindow, key: string, value: string | null){
-    await win.webContents.executeJavaScript(`localStorage.setItem("${settingKeyPrefix + key}", "${value?.replaceAll("\"", "\\\"")}");`, true);
-}
-////////////////////
-
+const store = new Store();
 
 function createWindow () {
     const win = new BrowserWindow({
@@ -58,7 +49,7 @@ function createWindow () {
     ipcMain.addListener("stayOnTopStateChange", async (event: any, state: {value: boolean}) => {
         win.setAlwaysOnTop(state.value);
         if(state.value){
-            const pinnedSizeStr = await getLocalStorage(win, "pinnedSize");
+            const pinnedSize = <{size: number[], position: number[]} | undefined>store.get("pinnedSize");
             maximized = win.isMaximized();
             if(!maximized){
                 regularSize = win.getSize();
@@ -66,9 +57,9 @@ function createWindow () {
             }
             
             if(maximized)
-                win.unmaximize();
-            if(pinnedSizeStr){
-                const pinnedSize = JSON.parse(pinnedSizeStr);
+            win.unmaximize();
+            if(pinnedSize){
+                console.log(pinnedSize);
                 win.setSize(pinnedSize.size[0], pinnedSize.size[1]);
                 win.setPosition(pinnedSize.position[0], pinnedSize.position[1]);
             }
@@ -85,13 +76,13 @@ function createWindow () {
 
     win.addListener("resize", () => {
         if(win.isAlwaysOnTop()){
-            setLocalStorage(win, "pinnedSize", JSON.stringify({size: win.getSize(), position: win.getPosition()}));
+            store.set("pinnedSize", {size: win.getSize(), position: win.getPosition()});
         }
     });
 
     win.addListener("move", () => {
         if(win.isAlwaysOnTop()){
-            setLocalStorage(win, "pinnedSize", JSON.stringify({size: win.getSize(), position: win.getPosition()}));
+            store.set("pinnedSize", {size: win.getSize(), position: win.getPosition()});
         }
     });
   

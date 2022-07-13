@@ -48,10 +48,12 @@ input.desktop[type=checkbox]:checked {
     position: relative;
     overflow: hidden;
     flex: 1 1 0;
+    border: 1px solid #343434;
 }
 
 #game\/sidebar\/content\/chat\/box{
     height: 100%;
+    border: none !important;
 }
 
 #jump-down-button{
