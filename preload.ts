@@ -13,6 +13,10 @@ const actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
 const integrationButtonsSelector = ".game\\/sidebar\\/content\\/settings\\/integration-button";
 const chatBoxSelector = "#game\\/sidebar\\/content\\/chat\\/box";
 const soundEffectVolumeSliderSelector = "#game\\/sidebar\\/content\\/settings\\/sfx-volume";
+const loginFormSelector = "#auth\\/existing-user\\/form";
+const loginEmailInputSelector = "#auth\\/existing-user\\/email";
+const loginPasswordInputSelector = "#auth\\/existing-user\\/password";
+const loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/button";
 
 
 const pingSoundEffect = new Audio("desktopmmo://assets/ping.mp3");
@@ -29,6 +33,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const chatBox = document.querySelector<HTMLDivElement>(chatBoxSelector)!;
 
     const soundEffectVolumeSlider = document.querySelector<HTMLInputElement>(soundEffectVolumeSliderSelector)!;
+
+    const loginForm = document.querySelector<HTMLFormElement>(loginFormSelector)!;
+    const loginEmailInput = document.querySelector<HTMLInputElement>(loginEmailInputSelector)!;
+    const loginPasswordInput = document.querySelector<HTMLInputElement>(loginPasswordInputSelector)!;
+    const loginSubmitButton = document.querySelector<HTMLInputElement>(loginSubmitButtonSelector)!;
 
     
     function checkDisplay(){
@@ -217,6 +226,33 @@ window.addEventListener('DOMContentLoaded', () => {
         pingSoundEffect.volume = parseInt(soundEffectVolumeSlider.value) / 100;
     });
     ///////////////////
+
+
+    // saving email
+    //////////////////
+
+    // loading
+    const savedEmail = <string | undefined>ipcRenderer.sendSync("get-email");
+    if(savedEmail){
+        loginEmailInput.value = savedEmail;
+        loginPasswordInput.focus();
+    }
+    const formMutationObserver = new MutationObserver((mutationList) => {
+        if(loginForm.classList.contains("shown") && savedEmail){
+            loginPasswordInput.focus();
+        }
+    });
+    formMutationObserver.observe(loginForm, {
+        attributes: true,
+        attributeFilter: ["class"]
+    });
+
+    // saving
+    loginSubmitButton.addEventListener("click", () => {
+        // not saving passwords for security reasons
+        ipcRenderer.send("save-email", {email: loginEmailInput.value});
+    });
+    //////////////////
 
 });
   

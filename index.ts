@@ -1,10 +1,10 @@
-import { app, BrowserWindow, ipcMain, protocol, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol, shell, safeStorage } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
 import { windowTitle, gameUrl, settingKeyPrefix } from './constants';
 import Store from "electron-store";
 
-const store = new Store();
+let store: Store;
 
 function createWindow () {
     const win = new BrowserWindow({
@@ -59,7 +59,6 @@ function createWindow () {
             if(maximized)
             win.unmaximize();
             if(pinnedSize){
-                console.log(pinnedSize);
                 win.setSize(pinnedSize.size[0], pinnedSize.size[1]);
                 win.setPosition(pinnedSize.position[0], pinnedSize.position[1]);
             }
@@ -74,15 +73,52 @@ function createWindow () {
         }
     });
 
+    ipcMain.addListener("save-email", (event: any, login: {email: string}) => {
+        if(safeStorage.isEncryptionAvailable()){
+            try{
+                store.set("login.email", safeStorage.encryptString(login.email));
+            }
+            catch{
+                // still uses a basic encryption
+                store.set("login.email", login.email);
+            }
+        }
+        else{
+            // still uses a basic encryption
+            store.set("login.email", login.email);
+        }
+    });
+
+    ipcMain.addListener("get-email", (event: any) => {
+        const email = <string | undefined>store.get("login.email");
+        if(email){
+            if(safeStorage.isEncryptionAvailable()){
+                try{
+                    event.returnValue = safeStorage.decryptString(Buffer.from(email, "utf-8"));
+                }
+                catch{
+                    event.returnValue = undefined;
+                }
+
+            }
+            else{
+                event.returnValue = email;
+            }
+        }  
+        else{
+            event.returnValue = undefined;
+        }
+    });
+
     win.addListener("resize", () => {
         if(win.isAlwaysOnTop()){
-            store.set("pinnedSize", {size: win.getSize(), position: win.getPosition()});
+            store.set("pinnedSize.size", win.getSize());
         }
     });
 
     win.addListener("move", () => {
         if(win.isAlwaysOnTop()){
-            store.set("pinnedSize", {size: win.getSize(), position: win.getPosition()});
+            store.set("pinnedSize.position", win.getPosition());
         }
     });
   
@@ -100,6 +136,19 @@ app.whenReady().then(() => {
             console.error(error);
         }
     });
+
+    if(safeStorage.isEncryptionAvailable()){
+        store = new Store();
+    }
+    else{
+        /* 
+        setting here a random encryptionKey because, if a user looks through the config directory and finds the 
+        config file, since it's just a JSON file, they may be tempted to modify it. By providing an encryption key, 
+        the file will be obfuscated, which should hopefully deter any users from doing so.
+        */
+        
+        store = new Store({encryptionKey: "kjrz43jkqb64npgnelkfzj3w4r4p3kfm;lqsd"});
+    }
     
 
     createWindow();
