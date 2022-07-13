@@ -3,6 +3,7 @@ import { alwaysShowGameCursorSettingName, censorChatSettingName, elementIdPrefix
 import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault, muteWhenUnfocusedDefault, pingSoundEffectDefault } from './defaults';
 import { createElement, isInputTypeable, toggleDisplay } from './elements';
 import Filter from "bad-words";
+import { SettingsUi } from './settingsUi';
 
 // might vary between game versions
 const sidebarSelector = "#game\\/sidebar";
@@ -79,97 +80,33 @@ window.addEventListener('DOMContentLoaded', () => {
         window.dispatchEvent(new UIEvent("resize"));
     }
     
+    const settingUi = new SettingsUi(settingsPanel);
 
-    // settings ui
+    // settings setup
     /////////////////////
-    createElement("h3", {innerText: "Desktop"}, settingsPanel);
 
-    const hideOverlayWhenPinnedInputId = elementIdPrefix + "game/sidebar/content/settings/hide-sidebar-pinned";
-    createElement("label", {innerText: "Hide overlays when pinned", for: hideOverlayWhenPinnedInputId}, settingsPanel); 
-    const hideOverlayWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: elementIdPrefix + "game/sidebar/content/settings/hide-sidebar-pinned", class: "desktop", checked: hideOverlaysWhenPinnedDefault}, settingsPanel);
+    const hideOverlayWhenPinnedInput =  settingUi.createCheckboxSetting(
+        "hide-overlay-pinned", "Hide overlays when pinned", hideOverlaysWhenPinnedDefault, (value) => {
+            checkDisplay();
+    });
     
+   const hideSidebarWhenPinnedInput =  settingUi.createCheckboxSetting(
+        "hide-sidebar-pinned", "Hide sidebar when pinned", hideSidebarWhenPinnedDefault, (value) => {
+            checkDisplay();
+    });
 
-    const hideSidebarWhenPinnedInputId = elementIdPrefix + "game/sidebar/content/settings/hide-sidebar-pinned"
-    createElement("label", {innerText: "Hide sidebar when pinned", for: hideSidebarWhenPinnedInputId}, settingsPanel);
-    const hideSidebarWhenPinnedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: hideSidebarWhenPinnedInputId, class: "desktop", checked: hideSidebarWhenPinnedDefault}, settingsPanel);
+    const alwaysShowGameCursorInput = settingUi.createCheckboxSetting(
+        "always-show-game-cursor", "Always show game cursor", alwaysShowGameCursorDefault, (value) => {
+            document.body.classList.toggle("always-show-game-cursor");
+    });
+    if(alwaysShowGameCursorInput.checked){
+        document.body.classList.add("always-show-game-cursor");
+    }
 
-
-    const alwaysShowGameCursorInputId = elementIdPrefix + "game/sidebar/content/settings/always-show-game-cursor"
-    createElement("label", {innerText: "Always show game cursor", for: alwaysShowGameCursorInputId}, settingsPanel);
-    const alwaysShowGameCursorInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: alwaysShowGameCursorInputId, class: "desktop", checked: alwaysShowGameCursorDefault}, settingsPanel);
-
-    const censorChatInputId = elementIdPrefix + "game/sidebar/content/settings/censor-chat"
-    createElement("label", {innerText: "Censor chat(slow)", for: censorChatInputId}, settingsPanel);
-    const censorChatInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: censorChatInputId, class: "desktop", checked: censorChatDefault}, settingsPanel);
-
-    const pingSoundEffectInputId = elementIdPrefix + "game/sidebar/content/settings/ping-sound-effect"
-    createElement("label", {innerText: "Ping sound effect", for: pingSoundEffectInputId}, settingsPanel);
-    const pingSoundEffectInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: pingSoundEffectInputId, class: "desktop", checked: pingSoundEffectDefault}, settingsPanel);
-    const muteWhenUnfocusedId = elementIdPrefix + "game/sidebar/content/settings/mute-when-unfocused"
-    createElement("label", {innerText: "Mute when unfocused", for: muteWhenUnfocusedId}, settingsPanel);
-    const muteWhenUnfocusedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: muteWhenUnfocusedId, class: "desktop", checked: muteWhenUnfocusedDefault}, settingsPanel);
+    const censorChatInput = settingUi.createCheckboxSetting("censor-chat", "Censor chat(slow)", censorChatDefault);
+    const pingSoundEffectInput = settingUi.createCheckboxSetting("ping-sound-effect", "Ping sound effect", pingSoundEffectDefault);
+    const muteWhenUnfocusedInput = settingUi.createCheckboxSetting("mute-when-unfocused", "Mute when unfocused", muteWhenUnfocusedDefault);
     ///////////////////////////////
-
-
-    // loading saved settings if exist
-    ///////////////////////////////////
-    const hideOverlayWhenPinnedSetting = localStorage.getItem(hideOverlayWhenPinnedSettingName);
-    if(hideOverlayWhenPinnedSetting){
-        hideOverlayWhenPinnedInput.checked = JSON.parse(hideOverlayWhenPinnedSetting);
-    }
-    
-    const hideSidebarWhenPinnedSetting = localStorage.getItem(hideSidebarWhenPinnedSettingName);
-    if(hideSidebarWhenPinnedSetting){
-        hideSidebarWhenPinnedInput.checked = JSON.parse(hideSidebarWhenPinnedSetting);
-    }
-    const alwaysShowGameCursorSetting = localStorage.getItem(alwaysShowGameCursorSettingName);
-    if(alwaysShowGameCursorSetting){
-        alwaysShowGameCursorInput.checked = JSON.parse(alwaysShowGameCursorSetting);
-        if(alwaysShowGameCursorInput.checked){
-            document.body.classList.add("always-show-game-cursor");
-        }
-    }
-    const censorChatSetting = localStorage.getItem(censorChatSettingName);
-    if(censorChatSetting){
-        censorChatInput.checked = JSON.parse(censorChatSetting);
-    }
-    const pingSoundEffectSetting = localStorage.getItem(pingSoundEffectSettingName);
-    if(pingSoundEffectSetting){
-        pingSoundEffectInput.checked = JSON.parse(pingSoundEffectSetting);
-    }
-    const muteWhenUnfocusedSetting = localStorage.getItem(muteWhenUnfocusedSettingName);
-    if(muteWhenUnfocusedSetting){
-        muteWhenUnfocusedInput.checked = JSON.parse(muteWhenUnfocusedSetting);
-    }
-    ////////////////////////////////////
-    
-
-    // listening for settings change
-    ///////////////////////////////////
-    hideOverlayWhenPinnedInput.addEventListener("input", () => {
-        checkDisplay();
-        localStorage.setItem(hideOverlayWhenPinnedSettingName, JSON.stringify(hideOverlayWhenPinnedInput.checked));
-    });
-
-    hideSidebarWhenPinnedInput.addEventListener("input", () => {
-        checkDisplay();
-        localStorage.setItem(hideSidebarWhenPinnedSettingName, JSON.stringify(hideSidebarWhenPinnedInput.checked));
-    });
-
-    alwaysShowGameCursorInput.addEventListener("input", () => {
-        localStorage.setItem(alwaysShowGameCursorSettingName, JSON.stringify(alwaysShowGameCursorInput.checked));
-        document.body.classList.toggle("always-show-game-cursor");
-    });
-    censorChatInput.addEventListener("input", () => {
-        localStorage.setItem(censorChatSettingName, JSON.stringify(censorChatInput.checked));
-    });
-    pingSoundEffectInput.addEventListener("input", () => {
-        localStorage.setItem(pingSoundEffectSettingName, JSON.stringify(pingSoundEffectInput.checked));
-    });
-    muteWhenUnfocusedInput.addEventListener("input", () => {
-        localStorage.setItem(muteWhenUnfocusedSettingName, JSON.stringify(muteWhenUnfocusedInput.checked));
-    });
-    ///////////////////////////////////
     
     
     // actions ui
@@ -266,7 +203,6 @@ window.addEventListener('DOMContentLoaded', () => {
     ///////////////////
     const filter = new Filter();
     const newMessageObserver = new MutationObserver((mutationList, observer) => {
-        if(!censorChatInput.checked) return;
         for(const mutation of mutationList) {
             mutation.addedNodes.forEach((node: Node) => {
                 const element = <HTMLParagraphElement>node;
