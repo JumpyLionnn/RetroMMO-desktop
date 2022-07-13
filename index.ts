@@ -1,10 +1,11 @@
 import { app, BrowserWindow, ipcMain, protocol, shell, safeStorage } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
-import { windowTitle, gameUrl, settingKeyPrefix } from './constants';
+import { windowTitle, gameUrl } from './constants';
 import Store from "electron-store";
 
 let store: Store;
+
 
 function createWindow () {
     const win = new BrowserWindow({
@@ -17,9 +18,9 @@ function createWindow () {
     
     
     win.setMenuBarVisibility(false);
-    
-    //debug
-    win.webContents.openDevTools();
+
+    if(DEBUG)
+        win.webContents.openDevTools();
     
    
     win.loadURL(gameUrl);
