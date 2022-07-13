@@ -17,6 +17,8 @@ const loginFormSelector = "#auth\\/existing-user\\/form";
 const loginEmailInputSelector = "#auth\\/existing-user\\/email";
 const loginPasswordInputSelector = "#auth\\/existing-user\\/password";
 const loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/button";
+const playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
+const playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
 
 
 const pingSoundEffect = new Audio("desktopmmo://assets/ping.mp3");
@@ -38,6 +40,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const loginEmailInput = document.querySelector<HTMLInputElement>(loginEmailInputSelector)!;
     const loginPasswordInput = document.querySelector<HTMLInputElement>(loginPasswordInputSelector)!;
     const loginSubmitButton = document.querySelector<HTMLInputElement>(loginSubmitButtonSelector)!;
+
+    const playerBoxTitle = document.querySelector(playerBoxTitleSelector)!;
+    const playerListBox = document.querySelector(playerListBoxSelector)!;
 
     
     function checkDisplay(){
@@ -192,6 +197,33 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
     /////////////////////////////////
+
+    // player list
+    ////////////////////////
+    const playerSearchInput = createElement<HTMLInputElement>("input", {type: "search", id: "player-search-input"});
+    playerBoxTitle.insertAdjacentElement("afterend", playerSearchInput);
+
+    playerSearchInput.addEventListener("input", () => {
+        playerSearchInput.value = playerSearchInput.value.trimStart();
+        const searchValue = playerSearchInput.value.toLowerCase();
+        playerListBox.querySelectorAll("p").forEach((element: Element) => {
+            const p = <HTMLParagraphElement>element;
+            toggleDisplay(p, p.innerText.toLowerCase().includes(searchValue));
+        });
+    });
+
+    // to overrite default game behavior
+    playerSearchInput.addEventListener("keydown", (e) => {
+        if(e.code === "KeyT" || e.code == "KeyH" || e.code == "KeyY" || e.code == "KeyU"){
+            e.preventDefault(); // the default game behavior(opening chat) 
+            let selectionStart = playerSearchInput.selectionStart!;
+            let selectionEnd = playerSearchInput.selectionEnd!;
+            playerSearchInput.value = playerSearchInput.value.substring(0, selectionStart) + e.key + playerSearchInput.value.substring(selectionEnd);
+            playerSearchInput.selectionStart = selectionStart + 1;
+            playerSearchInput.selectionEnd = selectionStart + 1;
+        }
+    });
+    ////////////////////////
 
 
     // basic chat censoring & ping sound effect

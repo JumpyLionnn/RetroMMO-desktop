@@ -70,3 +70,16 @@ input.desktop[type=checkbox]:checked {
     height: 2em;
     padding: 0;
 }
+
+
+#game\/sidebar\/content\/players\/box{
+    display: flex;
+    flex-direction: column;
+}
+
+#player-search-input{
+    background-color: transparent;
+    border: 1px solid #343434;
+    color: #ffffff;
+    padding: 0.1em;
+}

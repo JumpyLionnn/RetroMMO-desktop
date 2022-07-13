@@ -9,6 +9,7 @@ a RetroMMO desktop client with a lot of features.
 * A basic chat censoring.
 * ping sound effect.
 * jump to the bottom of the chat when scrolling.
+* Search players by name.
 
 
 ## Downloading the repository
