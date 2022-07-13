@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
-import { alwaysShowGameCursorSettingName, censorChatSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, pingSoundEffectSettingName, settingKeyPrefix } from './constants';
-import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault, pingSoundEffectDefault } from './defaults';
+import { alwaysShowGameCursorSettingName, censorChatSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, muteWhenUnfocusedSettingName, pingSoundEffectSettingName, settingKeyPrefix } from './constants';
+import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault, muteWhenUnfocusedDefault, pingSoundEffectDefault } from './defaults';
 import { createElement, isInputTypeable, toggleDisplay } from './elements';
 import Filter from "bad-words";
 
@@ -105,6 +105,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const pingSoundEffectInputId = elementIdPrefix + "game/sidebar/content/settings/ping-sound-effect"
     createElement("label", {innerText: "Ping sound effect", for: pingSoundEffectInputId}, settingsPanel);
     const pingSoundEffectInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: pingSoundEffectInputId, class: "desktop", checked: pingSoundEffectDefault}, settingsPanel);
+    const muteWhenUnfocusedId = elementIdPrefix + "game/sidebar/content/settings/mute-when-unfocused"
+    createElement("label", {innerText: "Mute when unfocused", for: muteWhenUnfocusedId}, settingsPanel);
+    const muteWhenUnfocusedInput = createElement<HTMLInputElement>("input", {type: "checkbox", id: muteWhenUnfocusedId, class: "desktop", checked: muteWhenUnfocusedDefault}, settingsPanel);
     ///////////////////////////////
 
 
@@ -134,6 +137,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if(pingSoundEffectSetting){
         pingSoundEffectInput.checked = JSON.parse(pingSoundEffectSetting);
     }
+    const muteWhenUnfocusedSetting = localStorage.getItem(muteWhenUnfocusedSettingName);
+    if(muteWhenUnfocusedSetting){
+        muteWhenUnfocusedInput.checked = JSON.parse(muteWhenUnfocusedSetting);
+    }
     ////////////////////////////////////
     
 
@@ -159,6 +166,9 @@ window.addEventListener('DOMContentLoaded', () => {
     pingSoundEffectInput.addEventListener("input", () => {
         localStorage.setItem(pingSoundEffectSettingName, JSON.stringify(pingSoundEffectInput.checked));
     });
+    muteWhenUnfocusedInput.addEventListener("input", () => {
+        localStorage.setItem(muteWhenUnfocusedSettingName, JSON.stringify(muteWhenUnfocusedInput.checked));
+    });
     ///////////////////////////////////
     
     
@@ -169,8 +179,15 @@ window.addEventListener('DOMContentLoaded', () => {
     stayOnTopInput.addEventListener("input", stayOnTopChange);
     ////////////////////
 
+    // mute when unfocused
+    ////////////////////////////
+    ipcRenderer.on("focus-change", () => {
+        ipcRenderer.send("focus-change-reply", muteWhenUnfocusedInput.checked);
+    });
+    ////////////////////////////
 
-    // jump down button
+
+    // chat jump down button
     //////////////////////
     const chatContainer = createElement("div", {id: "chat-container"});
     chatBox.parentElement!.insertBefore(chatContainer, chatBox);
@@ -283,21 +300,23 @@ window.addEventListener('DOMContentLoaded', () => {
     //////////////////
 
     // loading
-    const savedEmail = <string | undefined>ipcRenderer.sendSync("get-email");
-    if(savedEmail){
-        loginEmailInput.value = savedEmail;
-        loginPasswordInput.focus();
-    }
-    const formMutationObserver = new MutationObserver((mutationList) => {
-        if(loginForm.classList.contains("shown") && savedEmail){
+    (async function(){
+        const savedEmail = await <Promise<string | undefined>>ipcRenderer.invoke("get-email");
+        if(savedEmail){
+            loginEmailInput.value = savedEmail;
             loginPasswordInput.focus();
         }
-    });
-    formMutationObserver.observe(loginForm, {
-        attributes: true,
-        attributeFilter: ["class"]
-    });
 
+        const formMutationObserver = new MutationObserver((mutationList) => {
+            if(loginForm.classList.contains("shown") && savedEmail){
+                loginPasswordInput.focus();
+            }
+        });
+        formMutationObserver.observe(loginForm, {
+            attributes: true,
+            attributeFilter: ["class"]
+        });
+    })();
     // saving
     loginSubmitButton.addEventListener("click", () => {
         // not saving passwords for security reasons
@@ -312,12 +331,10 @@ window.addEventListener('DOMContentLoaded', () => {
         const element = <HTMLElement>e.target;
         if(element.tagName === "INPUT"){
             if(!isInputTypeable(<HTMLInputElement>element)){
-                console.log("input change");
                 focusGameCanvas();
             }
         }
         else if(!element.matches(specialFocusBehaviorElementsSelector)){
-            console.log("any element clicked");
             focusGameCanvas();
         }
     });

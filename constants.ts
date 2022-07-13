@@ -10,3 +10,4 @@ export const hideSidebarWhenPinnedSettingName = settingKeyPrefix + "hide-sidebar
 export const alwaysShowGameCursorSettingName = settingKeyPrefix + "always-show-game-cursor";
 export const censorChatSettingName = settingKeyPrefix + "censor-chat";
 export const pingSoundEffectSettingName = settingKeyPrefix + "ping-sound-effect";
+export const muteWhenUnfocusedSettingName = settingKeyPrefix + "mute-when-unfocused";

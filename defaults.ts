@@ -3,3 +3,4 @@ export const hideSidebarWhenPinnedDefault = true;
 export const alwaysShowGameCursorDefault = true;
 export const censorChatDefault = false;
 export const pingSoundEffectDefault = true;
+export const muteWhenUnfocusedDefault = false;

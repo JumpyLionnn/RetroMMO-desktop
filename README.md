@@ -9,6 +9,7 @@ a RetroMMO desktop client with a lot of features.
 * ping sound effect.
 * jump to the bottom of the chat when scrolling.
 * Search player by name.
+* Mute game automatically when the window is not focused.
 
 ### Minor improvments
 * Save email when login.

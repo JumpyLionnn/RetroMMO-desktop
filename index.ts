@@ -37,6 +37,8 @@ function createWindow () {
         });
     });
 
+    
+
     // handling links from inside the application
     win.webContents.on('new-window', function(e: Event, url: string) {
         e.preventDefault();
@@ -97,28 +99,39 @@ function createWindow () {
         }
     });
 
-    ipcMain.addListener("get-email", (event: any) => {
+    ipcMain.handle("get-email", (event: any) => {
         const email = <string | undefined>store.get("login.email");
         if(email){
             if(safeStorage.isEncryptionAvailable()){
                 try{
-                    event.returnValue = safeStorage.decryptString(Buffer.from(email, "utf-8"));
+                    return safeStorage.decryptString(Buffer.from(email, "utf-8"));
                 }
                 catch{
                     console.error("error: decryption failed.");
                     clientLog(win,"error: decryption failed.");
-                    event.returnValue = undefined;
+                    return undefined;   
                 }
 
             }
             else{
-                event.returnValue = email;
+                return email;
             }
         }  
         else{
-            event.returnValue = undefined;
+            return undefined;
         }
     });
+
+    function checkWindowVisibility(win: BrowserWindow){
+        win.webContents.send("focus-change");
+        ipcMain.once("focus-change-reply", (event, mute) => {
+            win.webContents.setAudioMuted((!win.isFocused() && (!win.isAlwaysOnTop() || win.isMinimized())) && mute);
+        });
+    }
+    
+    win.on("blur", () => checkWindowVisibility(win));
+    win.on("focus", () => checkWindowVisibility(win));
+    win.on("always-on-top-changed", () => checkWindowVisibility(win));
 
     win.addListener("resize", () => {
         if(win.isAlwaysOnTop()){
