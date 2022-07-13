@@ -23,3 +23,7 @@ export function toggleDisplay(element: HTMLElement, value: boolean){
     else
         element.style.removeProperty("display");
 }
+
+export function isInputTypeable(element: HTMLInputElement){
+    return element.type == "text" || element.type == "password" || element.type == "email" || element.type == "number" || element.type == "search" || element.type == "tel" || element.type == "url";
+}

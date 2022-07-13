@@ -5,11 +5,15 @@ a RetroMMO desktop client with a lot of features.
 * Pin the game screen on top all of the windows.
 * Hide sidebar and overlays when pinned.
 * Always show the game cursor in every element.
-* Extra security for integrations.
 * A basic chat censoring.
 * ping sound effect.
 * jump to the bottom of the chat when scrolling.
 * Search player by name.
+
+### Minor improvments
+* Save email when login.
+* Extra security for integrations.
+* Refocus game canvas at a lot of occasions.
 
 
 ## Downloading the repository

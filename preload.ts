@@ -1,12 +1,13 @@
 import { ipcRenderer } from 'electron';
 import { alwaysShowGameCursorSettingName, censorChatSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, pingSoundEffectSettingName, settingKeyPrefix } from './constants';
 import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault, pingSoundEffectDefault } from './defaults';
-import { createElement, toggleDisplay } from './elements';
+import { createElement, isInputTypeable, toggleDisplay } from './elements';
 import Filter from "bad-words";
 
 // might vary between game versions
 const sidebarSelector = "#game\\/sidebar";
 const gameMainSelector = "#game\\/main";
+const gameMainCanvasSelector = "#game\\/main\\/screen > canvas";
 const fpsCounterSelector = "#game\\/main\\/screen\\/fps-count";
 const settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
 const actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
@@ -19,6 +20,7 @@ const loginPasswordInputSelector = "#auth\\/existing-user\\/password";
 const loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/button";
 const playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
 const playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
+const specialFocusBehaviorElementsSelector = "game\\/sidebar\\/content\\/chat\\/buttons button, " + gameMainCanvasSelector;
 
 const pingSoundEffect = new Audio("desktopmmo://assets/audio/ping.mp3");
 
@@ -31,6 +33,8 @@ ipcRenderer.on("log", (event, message) => {
 window.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector<HTMLDivElement>(sidebarSelector)!;
     const gameMain = document.querySelector<HTMLDivElement>(gameMainSelector)!;
+
+    let gameMainCanvas = document.querySelector<HTMLCanvasElement>(gameMainCanvasSelector)!;
 
     const fpsCounter = document.querySelector<HTMLParagraphElement>(fpsCounterSelector)!;
 
@@ -48,6 +52,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const playerBoxTitle = document.querySelector(playerBoxTitleSelector)!;
     const playerListBox = document.querySelector(playerListBoxSelector)!;
+
+    function focusGameCanvas(){
+        if(gameMainCanvas === null){
+            gameMainCanvas = document.querySelector<HTMLCanvasElement>(gameMainCanvasSelector)!;
+            if(gameMainCanvas === null){
+                return;
+            }
+        }
+        gameMainCanvas.focus();
+    }
     
     function checkDisplay(){
         const shouldHideSidebar = stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked;
@@ -157,6 +171,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     // jump down button
+    //////////////////////
     const chatContainer = createElement("div", {id: "chat-container"});
     chatBox.parentElement!.insertBefore(chatContainer, chatBox);
     chatBox.remove();
@@ -289,6 +304,24 @@ window.addEventListener('DOMContentLoaded', () => {
         ipcRenderer.send("save-email", {email: loginEmailInput.value});
     });
     //////////////////
+
+
+    // refocusing game canvas
+    //////////////////////////////
+    document.addEventListener("click", (e: MouseEvent) => {
+        const element = <HTMLElement>e.target;
+        if(element.tagName === "INPUT"){
+            if(!isInputTypeable(<HTMLInputElement>element)){
+                console.log("input change");
+                focusGameCanvas();
+            }
+        }
+        else if(!element.matches(specialFocusBehaviorElementsSelector)){
+            console.log("any element clicked");
+            focusGameCanvas();
+        }
+    });
+    //////////////////////////////
 
 });
   
