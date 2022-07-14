@@ -1,27 +1,49 @@
 import { ipcRenderer } from 'electron';
-import { alwaysShowGameCursorSettingName, censorChatSettingName, elementIdPrefix, hideOverlayWhenPinnedSettingName, hideSidebarWhenPinnedSettingName, muteWhenUnfocusedSettingName, pingSoundEffectSettingName, settingKeyPrefix } from './constants';
+import { elementIdPrefix } from './constants';
 import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedDefault, hideSidebarWhenPinnedDefault, muteWhenUnfocusedDefault, pingSoundEffectDefault } from './defaults';
 import { createElement, isInputTypeable, toggleDisplay } from './elements';
 import Filter from "bad-words";
 import { SettingsUi } from './settingsUi';
 
 // might vary between game versions
-const sidebarSelector = "#game\\/sidebar";
-const gameMainSelector = "#game\\/main";
-const gameMainCanvasSelector = "#game\\/main\\/screen > canvas";
-const fpsCounterSelector = "#game\\/main\\/screen\\/fps-count";
-const settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
-const actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
-const integrationButtonsSelector = ".game\\/sidebar\\/content\\/settings\\/integration-button";
-const chatBoxSelector = "#game\\/sidebar\\/content\\/chat\\/box";
-const soundEffectVolumeSliderSelector = "#game\\/sidebar\\/content\\/settings\\/sfx-volume";
-const loginFormSelector = "#auth\\/existing-user\\/form";
-const loginEmailInputSelector = "#auth\\/existing-user\\/email";
-const loginPasswordInputSelector = "#auth\\/existing-user\\/password";
-const loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/button";
-const playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
-const playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
-const specialFocusBehaviorElementsSelector = "game\\/sidebar\\/content\\/chat\\/buttons button, " + gameMainCanvasSelector;
+const selectors: {[key: string]: string} = {};
+if(GAME_VERSION == "old"){
+    selectors.sidebarSelector = "#chat-container";
+    selectors.gameMainSelector = "#canvas-outer-container";
+    selectors.gameMainCanvasSelector = "#canvas";
+    selectors.fpsCounterSelector = "#fps"; // there is none
+    selectors.settingsPanelSelector = "#settings";
+    selectors.actionsPanelSelector = "#actions";
+    selectors.integrationButtonsSelector = "#discord-linked, #discord-not-linked";
+    selectors.chatBoxSelector = "#chat-box";
+    selectors.soundEffectVolumeSliderSelector = "#sfx-volume";
+    selectors.loginFormSelector = "#auth-menu";
+    selectors.loginEmailInputSelector = "#sign-in-email";
+    selectors.loginPasswordInputSelector = "#sign-in-password";
+    selectors.loginSubmitButtonSelector = "#existing-user-form > input.auth-button";
+    selectors.playerBoxTitleSelector = "#online-players";
+    selectors.playerListBoxSelector = "#players";
+    selectors.specialFocusBehaviorElementsSelector = "#chat-buttons img, " + selectors.gameMainCanvasSelector + ", #overlay-canvas";
+}
+else{
+    selectors.sidebarSelector = "#game\\/sidebar";
+    selectors.gameMainSelector = "#game\\/main";
+    selectors.gameMainCanvasSelector = "#game\\/main\\/screen > canvas";
+    selectors.fpsCounterSelector = "#game\\/main\\/screen\\/fps-count";
+    selectors.settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
+    selectors.actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
+    selectors.integrationButtonsSelector = ".game\\/sidebar\\/content\\/settings\\/integration-button";
+    selectors.chatBoxSelector = "#game\\/sidebar\\/content\\/chat\\/box";
+    selectors.soundEffectVolumeSliderSelector = "#game\\/sidebar\\/content\\/settings\\/sfx-volume";
+    selectors.loginFormSelector = "#auth\\/existing-user\\/form";
+    selectors.loginEmailInputSelector = "#auth\\/existing-user\\/email";
+    selectors.loginPasswordInputSelector = "#auth\\/existing-user\\/password";
+    selectors.loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/button";
+    selectors.playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
+    selectors.playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
+    selectors.specialFocusBehaviorElementsSelector = "game\\/sidebar\\/content\\/chat\\/buttons button, " + selectors.gameMainCanvasSelector;
+}
+
 
 const pingSoundEffect = new Audio("desktopmmo://assets/audio/ping.mp3");
 
@@ -32,31 +54,31 @@ ipcRenderer.on("log", (event, message) => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.querySelector<HTMLDivElement>(sidebarSelector)!;
-    const gameMain = document.querySelector<HTMLDivElement>(gameMainSelector)!;
+    const sidebar = document.querySelector<HTMLDivElement>(selectors.sidebarSelector)!;
+    const gameMain = document.querySelector<HTMLDivElement>(selectors.gameMainSelector)!;
 
-    let gameMainCanvas = document.querySelector<HTMLCanvasElement>(gameMainCanvasSelector)!;
+    let gameMainCanvas = document.querySelector<HTMLCanvasElement>(selectors.gameMainCanvasSelector)!;
 
-    const fpsCounter = document.querySelector<HTMLParagraphElement>(fpsCounterSelector)!;
+    const fpsCounter = document.querySelector<HTMLParagraphElement>(selectors.fpsCounterSelector)!;
 
-    const settingsPanel = document.querySelector<HTMLDivElement>(settingsPanelSelector)!;
-    const actionsPanel = document.querySelector<HTMLDivElement>(actionsPanelSelector)!;
+    const settingsPanel = document.querySelector<HTMLDivElement>(selectors.settingsPanelSelector)!;
+    const actionsPanel = document.querySelector<HTMLDivElement>(selectors.actionsPanelSelector)!;
 
-    const chatBox = document.querySelector<HTMLDivElement>(chatBoxSelector)!;
+    const chatBox = document.querySelector<HTMLDivElement>(selectors.chatBoxSelector)!;
 
-    const soundEffectVolumeSlider = document.querySelector<HTMLInputElement>(soundEffectVolumeSliderSelector)!;
+    const soundEffectVolumeSlider = document.querySelector<HTMLInputElement>(selectors.soundEffectVolumeSliderSelector)!;
 
-    const loginForm = document.querySelector<HTMLFormElement>(loginFormSelector)!;
-    const loginEmailInput = document.querySelector<HTMLInputElement>(loginEmailInputSelector)!;
-    const loginPasswordInput = document.querySelector<HTMLInputElement>(loginPasswordInputSelector)!;
-    const loginSubmitButton = document.querySelector<HTMLInputElement>(loginSubmitButtonSelector)!;
+    const loginForm = document.querySelector<HTMLFormElement>(selectors.loginFormSelector)!;
+    const loginEmailInput = document.querySelector<HTMLInputElement>(selectors.loginEmailInputSelector)!;
+    const loginPasswordInput = document.querySelector<HTMLInputElement>(selectors.loginPasswordInputSelector)!;
+    const loginSubmitButton = document.querySelector<HTMLInputElement>(selectors.loginSubmitButtonSelector)!;
 
-    const playerBoxTitle = document.querySelector(playerBoxTitleSelector)!;
-    const playerListBox = document.querySelector(playerListBoxSelector)!;
+    const playerBoxTitle = document.querySelector(selectors.playerBoxTitleSelector)!;
+    const playerListBox = document.querySelector(selectors.playerListBoxSelector)!;
 
     function focusGameCanvas(){
         if(gameMainCanvas === null){
-            gameMainCanvas = document.querySelector<HTMLCanvasElement>(gameMainCanvasSelector)!;
+            gameMainCanvas = document.querySelector<HTMLCanvasElement>(selectors.gameMainCanvasSelector)!;
             if(gameMainCanvas === null){
                 return;
             }
@@ -69,7 +91,8 @@ window.addEventListener('DOMContentLoaded', () => {
         toggleDisplay(unpinButton, stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked);
         toggleDisplay(sidebar, !shouldHideSidebar);
 
-        toggleDisplay(fpsCounter, !(stayOnTopInput.checked && hideOverlayWhenPinnedInput.checked));
+        if(GAME_VERSION === "new")
+            toggleDisplay(fpsCounter, !(stayOnTopInput.checked && hideOverlayWhenPinnedInput.checked));
     }
 
     function stayOnTopChange(){
@@ -79,16 +102,28 @@ window.addEventListener('DOMContentLoaded', () => {
         // to resize the canvas from the actual game
         window.dispatchEvent(new UIEvent("resize"));
     }
+
+    function isElementMessage(element: HTMLParagraphElement){
+        if(GAME_VERSION === "old"){
+            return element.classList.contains("say") || element.classList.contains("wsay") || element.classList.contains("psay") || element.classList.contains("tsay");
+        }
+        else{
+            return element.classList.contains("message")
+        }
+    }
     
     const settingUi = new SettingsUi(settingsPanel);
 
     // settings setup
     /////////////////////
 
-    const hideOverlayWhenPinnedInput =  settingUi.createCheckboxSetting(
+    const hideOverlayWhenPinnedInput = settingUi.createCheckboxSetting(
         "hide-overlay-pinned", "Hide overlays when pinned", hideOverlaysWhenPinnedDefault, (value) => {
             checkDisplay();
     });
+    if(GAME_VERSION === "old"){
+        hideOverlayWhenPinnedInput.hide();
+    }
     
    const hideSidebarWhenPinnedInput =  settingUi.createCheckboxSetting(
         "hide-sidebar-pinned", "Hide sidebar when pinned", hideSidebarWhenPinnedDefault, (value) => {
@@ -126,7 +161,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // chat jump down button
     //////////////////////
-    const chatContainer = createElement("div", {id: "chat-container"});
+    const chatContainer = createElement("div", {id: "desktop-chat-container"});
     chatBox.parentElement!.insertBefore(chatContainer, chatBox);
     chatBox.remove();
     chatContainer.appendChild(chatBox);
@@ -161,11 +196,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // itegration buttons override
     /////////////////////////////////
-    document.querySelectorAll(integrationButtonsSelector).forEach((element: Element) => {
+    document.querySelectorAll(selectors.integrationButtonsSelector).forEach((element: Element) => {
         const button = <HTMLButtonElement>element;
         button.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopImmediatePropagation();
+            event.cancelBubble = true;
             alert("Please use the web client to perform this action(for safety reasons).");
         });
     });
@@ -175,11 +211,11 @@ window.addEventListener('DOMContentLoaded', () => {
     ////////////////////////
     const playerSearchInput = createElement<HTMLInputElement>("input", {type: "search", id: "player-search-input"});
     playerBoxTitle.insertAdjacentElement("afterend", playerSearchInput);
-
+    const playerEntrySelector = GAME_VERSION === "old" ? "p.players-entry" : "p"
     playerSearchInput.addEventListener("input", () => {
         playerSearchInput.value = playerSearchInput.value.trimStart();
         const searchValue = playerSearchInput.value.toLowerCase();
-        playerListBox.querySelectorAll("p").forEach((element: Element) => {
+        playerListBox.querySelectorAll(playerEntrySelector).forEach((element: Element) => {
             const p = <HTMLParagraphElement>element;
             toggleDisplay(p, p.innerText.toLowerCase().includes(searchValue));
         });
@@ -202,16 +238,17 @@ window.addEventListener('DOMContentLoaded', () => {
     // basic chat censoring & ping sound effect
     ///////////////////
     const filter = new Filter();
+    const highlightClass = GAME_VERSION === "old" ? "at" : "highlight";
     const newMessageObserver = new MutationObserver((mutationList, observer) => {
         for(const mutation of mutationList) {
             mutation.addedNodes.forEach((node: Node) => {
                 const element = <HTMLParagraphElement>node;
-                if(element.classList.contains("highlight") && pingSoundEffectInput.checked){
+                if(element.classList.contains(highlightClass) && pingSoundEffectInput.checked){
                     pingSoundEffect.play();
                 }
 
                 if(censorChatInput.checked){
-                    if(element.classList.contains("message")){
+                    if(isElementMessage(element)){
                         element.querySelectorAll("span.contents").forEach((element: Element) => {
                             const span = <HTMLSpanElement>element;
                             span.innerText = filter.clean(span.innerText);
@@ -243,8 +280,9 @@ window.addEventListener('DOMContentLoaded', () => {
             loginPasswordInput.focus();
         }
 
+        const loginFormShownClass = GAME_VERSION == "old" ? "existing-user" : "shown";
         const formMutationObserver = new MutationObserver((mutationList) => {
-            if(loginForm.classList.contains("shown") && savedEmail){
+            if(loginForm.classList.contains(loginFormShownClass) && savedEmail){
                 loginPasswordInput.focus();
             }
         });
@@ -270,7 +308,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 focusGameCanvas();
             }
         }
-        else if(!element.matches(specialFocusBehaviorElementsSelector)){
+        else if(!element.matches(selectors.specialFocusBehaviorElementsSelector)){
             focusGameCanvas();
         }
     });

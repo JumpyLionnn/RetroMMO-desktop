@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, protocol, shell, safeStorage } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
-import { windowTitle, gameUrl } from './constants';
+import { windowTitle, gameUrl, oldGameUrl } from './constants';
 import Store from "electron-store";
 
 let store: Store;
@@ -25,10 +25,10 @@ function createWindow () {
     if(DEBUG)
         win.webContents.openDevTools();
     
-   
-    win.loadURL(gameUrl);
+    win.loadURL(GAME_VERSION == "old" ? oldGameUrl : gameUrl);
     win.webContents.on('did-finish-load', () => {
-        fs.readFile(path.resolve(__dirname, "css/style.css"), {encoding: "utf-8"}, (error, css) => {
+        const cssPath = GAME_VERSION === "old" ? "css/styleForOld.css" : "css/style.css";
+        fs.readFile(path.resolve(__dirname, cssPath), {encoding: "utf-8"}, (error, css) => {
             if(error){
                 console.error("error:", error);
                 clientLog(win,"error: " + error);

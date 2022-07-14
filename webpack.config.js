@@ -13,6 +13,7 @@ module.exports = ({context, request}, cb) => {
           new webpack.DefinePlugin({
             RELEASE: cb.mode == "production",
             DEBUG: cb.mode == "development",
+            GAME_VERSION: JSON.stringify(cb.env.version ?? "new")
           }),
           new CopyWebpackPlugin({
             patterns: [
