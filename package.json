@@ -52,7 +52,7 @@
         "dir": "dist/",
         "asar": true,
         "name": "RetroMMODesktop",
-        "executableName": "RetroMMODesktop"
+        "executableName": "retrommo-desktop"
       },
       "makers": [
         {
