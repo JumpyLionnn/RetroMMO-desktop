@@ -1,6 +1,6 @@
 {
   "name": "retrommo-desktop",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "a RetroMMO desktop client",
   "author": "JumpyLionnn",
   "main": "dist/index.js",
