@@ -13,7 +13,7 @@ function clientLog(win: BrowserWindow, message: string){
 function createWindow () {
     const win = new BrowserWindow({
         title: windowTitle,
-        icon: "./assets/favicon.png",
+        icon: "./assets/images/icon.png",
         webPreferences: {
         preload: path.join(__dirname, 'preload.js')
         }

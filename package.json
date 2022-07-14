@@ -48,15 +48,17 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "icon": "./assets/icon.ico",
+        "icon": "./assets/images/icon.ico",
         "dir": "dist/",
         "asar": true,
-        "name": "RetroMMODesktop"
+        "name": "RetroMMODesktop",
+        "executableName": "RetroMMODesktop"
       },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
-          "config": {}
+          "config": {
+          }
         },
         {
           "name": "@electron-forge/maker-zip",
