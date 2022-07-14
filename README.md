@@ -1,5 +1,6 @@
 # RetroMMO-desktop
 a RetroMMO desktop client with a lot of features.
+Supports the 2 game versions!
 
 ## Features
 * Pin the game screen on top all of the windows.

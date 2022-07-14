@@ -10,6 +10,7 @@
     "build": "webpack --mode=development",
     "watch-old": "webpack --watch --mode=development --env version=old",
     "build-old": "webpack --mode=development --env version=old",
+    "build-old-release": "webpack --mode=production --env version=old",
     "build-release": "webpack --mode=production",
     "package": "electron-forge package",
     "make": "electron-forge make"
@@ -54,7 +55,21 @@
       },
       "makers": [
         {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {}
+        },
+        {
           "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
           "config": {}
         }
       ]
