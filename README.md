@@ -12,7 +12,7 @@ Supports the 2 game versions!
 * Search player by name.
 * Mute game automatically when the window is not focused.
 
-### Minor improvments
+### Minor improvements
 * Save email when login.
 * Extra security for integrations.
 * Refocus game canvas at a lot of occasions.

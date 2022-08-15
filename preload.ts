@@ -303,12 +303,13 @@ window.addEventListener('DOMContentLoaded', () => {
     //////////////////////////////
     document.addEventListener("click", (e: MouseEvent) => {
         const element = <HTMLElement>e.target;
+        const selection = document.getSelection();
         if(element.tagName === "INPUT"){
             if(!isInputTypeable(<HTMLInputElement>element)){
                 focusGameCanvas();
             }
         }
-        else if(!element.matches(selectors.specialFocusBehaviorElementsSelector)){
+        else if(!element.matches(selectors.specialFocusBehaviorElementsSelector) && (selection === undefined || selection?.isCollapsed)){
             focusGameCanvas();
         }
     });
