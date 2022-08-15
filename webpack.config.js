@@ -24,7 +24,7 @@ module.exports = ({context, request}, cb) => {
               { 
                 from: path.resolve(__dirname, 'css/'), 
                 to: path.resolve(__dirname, 'dist/css/') 
-              },
+              }
             ]
           })
         ],
