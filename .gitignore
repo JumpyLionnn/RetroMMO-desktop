@@ -106,3 +106,5 @@ dist
 
 #package
 out/
+
+cache/

@@ -1,8 +1,9 @@
-import { app, BrowserWindow, ipcMain, protocol, shell, safeStorage } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol, shell, safeStorage, session } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
-import { windowTitle, gameUrl, oldGameUrl } from './constants';
+import { windowTitle, gameUrl, oldGameUrl, cachedAssetsDirectory } from './constants';
 import Store from "electron-store";
+import { downloadFile, request } from './request';
 
 let store: Store;
 
@@ -10,7 +11,37 @@ function clientLog(win: BrowserWindow, message: string){
     win.webContents.send("log", message);
 }
 
-function createWindow () {
+const extractOldGameVersionRegexp = /(?<=const version = ")[0-9]+.[0-9]+.[0-9]+(?=";)/;
+async function getGameVersion(): Promise<string | null>{
+    if(GAME_VERSION === "old"){
+        const response = await request(oldGameUrl + "/script.js");
+        if(response.ok){
+            const result = response.text.match(extractOldGameVersionRegexp);
+            if(result){
+                return result[0].trim();
+            }
+        }
+    }
+    else{
+        const response = await request(gameUrl + "/version.json");
+        if(response.ok){
+            return response.text.trim();
+        }
+    }
+    return null;
+}
+
+// an async version of fs.exists
+async function exists(path: string){
+    try {
+        await fs.promises.access(path);
+        return true;
+   } catch (error) {
+        return false;
+   }
+}
+
+async function createWindow () {
     const win = new BrowserWindow({
         title: windowTitle,
         icon: "./assets/images/icon.png",
@@ -18,9 +49,59 @@ function createWindow () {
         preload: path.join(__dirname, 'preload.js')
         }
     });
-    
-    
+
     win.setMenuBarVisibility(false);
+
+    // offline loading
+    const currentGameVersion = await getGameVersion();
+    const lastGameVersion = store.get("game-version");
+    const assetsDownloadRequired = currentGameVersion !== lastGameVersion;
+    if(assetsDownloadRequired){
+        store.set("game-version", currentGameVersion);
+        fs.rmSync(cachedAssetsDirectory, { recursive: true, force: true });
+    }
+    
+    if (!fs.existsSync(cachedAssetsDirectory)){
+        fs.mkdirSync(cachedAssetsDirectory, { recursive: true });
+    }
+
+    const filter = {
+        urls: ["https://*.retro-mmo.com/*"]
+    };
+    const cachedResourceTypes = ["script", "image", "font", "media"];
+    session.defaultSession.webRequest.onBeforeRequest(filter, async (details, callback) => { 
+        const url = new URL(details.url); 
+        const filepath = path.resolve(cachedAssetsDirectory + url.pathname);
+
+        const filepathUrl = "desktopmmo://" + filepath;
+        // there is no caching for stylesheets because it creates issues with assets inside them when loading them from a file
+        if(cachedResourceTypes.includes(details.resourceType)){
+            if(assetsDownloadRequired){
+                await downloadFile(url.href, filepath).then(() => {
+                    callback({redirectURL: filepathUrl});
+                }).catch(() => {
+                    callback({}); // load from an url and not from a file
+                });
+            }
+            else{
+                if(!await exists(filepath)){
+                    // if the file does not exist then create it
+                    await downloadFile(url.href, filepath).then(() => {
+                        callback({redirectURL: filepathUrl});
+                    }).catch(() => {
+                        callback({}); // load from an url and not from a file
+                    });
+                }
+                else{
+                    callback({redirectURL: filepathUrl});
+                }
+            }
+        }
+        else{
+            callback({});
+        }
+    });
+    // end of offline loading
 
     if(DEBUG)
         win.webContents.openDevTools();
