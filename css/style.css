@@ -23,7 +23,9 @@ input.desktop[type=checkbox]:checked {
 .always-show-game-cursor a,
 .always-show-game-cursor input[type=checkbox], 
 .always-show-game-cursor input[type=submit], 
-.always-show-game-cursor input[type=range]{
+.always-show-game-cursor input[type=range],
+#game\/sidebar\/content\/players\/list#game\/sidebar\/content\/players\/list#game\/sidebar\/content\/players\/list p,
+#game\/sidebar\/content\/players\/list#game\/sidebar\/content\/players\/list#game\/sidebar\/content\/players\/list p *{
     cursor: url(../../images/template/cursors/pointer.png) 7 2, pointer !important;
 }
 
@@ -84,3 +86,22 @@ input.desktop[type=checkbox]:checked {
     padding: 0.1em;
 }
 
+
+
+#player-data{
+    max-height: 200px;
+    overflow: hidden;
+    border-bottom: 1px solid #343434;
+    padding-bottom: .3em;
+    text-align: center;
+    width: calc(100% - 1em);
+    margin-left: .5em;
+}
+
+#game\/sidebar\/content\/players\/list p.selected{
+    border-top: 1px solid #343434;
+}
+
+#game\/sidebar\/content\/players\/list{
+    width: 100%;
+}

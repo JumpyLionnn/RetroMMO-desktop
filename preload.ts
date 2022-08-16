@@ -4,6 +4,7 @@ import { alwaysShowGameCursorDefault, censorChatDefault, hideOverlaysWhenPinnedD
 import { createElement, isInputTypeable, toggleDisplay } from './elements';
 import Filter from "bad-words";
 import { SettingsUi } from './settingsUi';
+import * as playerDataDisplay from './playerDataDisplay';
 
 // might vary between game versions
 const selectors: {[key: string]: string} = {};
@@ -21,6 +22,7 @@ if(GAME_VERSION == "old"){
     selectors.loginEmailInputSelector = "#sign-in-email";
     selectors.loginPasswordInputSelector = "#sign-in-password";
     selectors.loginSubmitButtonSelector = "#existing-user-form > input.auth-button";
+    selectors.playerListTabSelector = "#players";
     selectors.playerBoxTitleSelector = "#online-players";
     selectors.playerListBoxSelector = "#players";
     selectors.specialFocusBehaviorElementsSelector = "#chat-buttons img, " + selectors.gameMainCanvasSelector + ", #overlay-canvas";
@@ -40,6 +42,7 @@ else{
     selectors.loginPasswordInputSelector = "#auth\\/existing-user\\/password";
     selectors.loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/button";
     selectors.playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
+    selectors.playerListTabSelector = "#game\\/sidebar\\/content\\/players";
     selectors.playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
     selectors.specialFocusBehaviorElementsSelector = "game\\/sidebar\\/content\\/chat\\/buttons button, " + selectors.gameMainCanvasSelector;
 }
@@ -73,8 +76,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const loginPasswordInput = document.querySelector<HTMLInputElement>(selectors.loginPasswordInputSelector)!;
     const loginSubmitButton = document.querySelector<HTMLInputElement>(selectors.loginSubmitButtonSelector)!;
 
+    const playersListTab = document.querySelector(selectors.playerListTabSelector)!;
     const playerBoxTitle = document.querySelector(selectors.playerBoxTitleSelector)!;
-    const playerListBox = document.querySelector(selectors.playerListBoxSelector)!;
+    const playerListBox = document.querySelector<HTMLDivElement>(selectors.playerListBoxSelector)!;
 
     function focusGameCanvas(){
         if(gameMainCanvas === null){
@@ -234,6 +238,30 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     ////////////////////////
 
+
+    // player data
+    /////////////////
+    playerDataDisplay.init(playerListBox);
+    const tabChanges = new MutationObserver((mutations) => {
+        if(GAME_VERSION === "old"){
+            const oldClasses = mutations[0].oldValue!;
+            const newClasses = (<HTMLElement>mutations[1].target).classList.toString();
+            if(oldClasses !== newClasses){
+                playerDataDisplay.removeAllDisplays();
+            }
+        }
+        else{
+            if(mutations.length !== 2){
+                playerDataDisplay.removeAllDisplays();
+            }
+        }
+    });
+    tabChanges.observe(GAME_VERSION === "old" ? sidebar : playersListTab, {
+        attributes: true,
+        attributeFilter: ["class"],
+        attributeOldValue: true
+    });
+    /////////////////
 
     // basic chat censoring & ping sound effect
     ///////////////////

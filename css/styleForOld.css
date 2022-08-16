@@ -15,6 +15,7 @@ input.desktop[type=checkbox]:checked {
     border: 0.1em solid #343434;
     color: white;
     padding: 0.1em;
+    margin-bottom: 1em;
 }
 
 
@@ -35,7 +36,9 @@ input.desktop[type=checkbox]:checked {
 .always-show-game-cursor #chat-sub p,
 .always-show-game-cursor input[type=checkbox], 
 .always-show-game-cursor input[type=submit], 
-.always-show-game-cursor input[type=range]{
+.always-show-game-cursor input[type=range],
+.always-show-game-cursor .players-entry,
+.always-show-game-cursor .players-entry *{
     cursor: url(desktopmmo://assets/images/old/pointer.png)7 2, pointer !important;
 }
 
@@ -99,4 +102,16 @@ input.desktop[type=checkbox]:checked {
     width: 2em;
     height: 2em;
     padding: 0;
+}
+
+
+#player-data{
+    max-height: 200px;
+    overflow: hidden;
+    border-bottom: 1px solid #343434;
+    padding-bottom: .3em;
+}
+
+.players-entry.selected{
+    border-top: 1px solid #343434;
 }

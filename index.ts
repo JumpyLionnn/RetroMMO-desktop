@@ -266,8 +266,6 @@ app.whenReady().then(() => {
         const url = request.url.replace('desktopmmo://', '');
         const filepath = path.resolve(__dirname, url);
         if(!isPathAllowedForClient(filepath)){
-            console.log(url);
-            console.log(filepath);
             return;
         }
         try {
