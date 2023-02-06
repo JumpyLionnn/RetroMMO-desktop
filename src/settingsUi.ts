@@ -25,7 +25,7 @@ export class SettingsUi{
     public constructor(settingsPanel: HTMLDivElement){
         this._settingsPanel = settingsPanel;
 
-        createElement(GAME_VERSION === "old" ? "h2" : "h3", {innerText: "Desktop"}, settingsPanel);
+        createElement("h3", {innerText: "Desktop"}, settingsPanel);
     }
 
     public createCheckboxSetting(name: string, text: string, defaultValue: boolean, onChange: (value: boolean) => void = (value) => {}){

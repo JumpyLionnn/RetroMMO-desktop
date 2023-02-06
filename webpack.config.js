@@ -6,8 +6,8 @@ module.exports = ({context, request}, cb) => {
     return {
         target: "node",
         entry: {
-            index: "./index.ts",
-            preload: "./preload.ts"
+            index: "./src/index.ts",
+            preload: "./src/preload.ts"
         },
         plugins: [
           new webpack.DefinePlugin({

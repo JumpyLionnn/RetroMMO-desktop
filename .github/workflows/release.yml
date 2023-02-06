@@ -21,7 +21,7 @@ jobs:
     - name: install dependencies
       run: npm install
     - name: build
-      run: npm run build-old-release
+      run: npm run build-release
     - name: package
       run: npm run make
     - name: publish

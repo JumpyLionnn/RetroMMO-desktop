@@ -55,9 +55,5 @@ jobs:
       run: npm run build
     - name: build new release
       run: npm run build-release
-    - name: build old debug
-      run: npm run build-old
-    - name: build old release
-      run: npm run build-old
     - name: package
       run: npm run make

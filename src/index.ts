@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, protocol, shell, safeStorage, session } from 'electron';
 import * as path from 'path';
 import * as fs from "fs";
-import { windowTitle, gameUrl, oldGameUrl, cachedAssetsDirectory } from './constants';
+import { windowTitle, gameUrl, cachedAssetsDirectory } from './constants';
 import Store from "electron-store";
 import { downloadFile, request } from './request';
 
@@ -11,22 +11,10 @@ function clientLog(win: BrowserWindow, message: string){
     win.webContents.send("log", message);
 }
 
-const extractOldGameVersionRegexp = /(?<=const version = ")[0-9]+.[0-9]+.[0-9]+(?=";)/;
 async function getGameVersion(): Promise<string | null>{
-    if(GAME_VERSION === "old"){
-        const response = await request(oldGameUrl + "/script.js");
-        if(response.ok){
-            const result = response.text.match(extractOldGameVersionRegexp);
-            if(result){
-                return result[0].trim();
-            }
-        }
-    }
-    else{
-        const response = await request(gameUrl + "/version.json");
-        if(response.ok){
-            return response.text.trim();
-        }
+    const response = await request(gameUrl + "/version.json");
+    if(response.ok){
+        return response.text.trim();
     }
     return null;
 }
@@ -106,10 +94,9 @@ async function createWindow () {
     if(DEBUG)
         win.webContents.openDevTools();
     
-    win.loadURL(GAME_VERSION == "old" ? oldGameUrl : gameUrl);
+    win.loadURL(gameUrl);
     win.webContents.on('did-finish-load', () => {
-        const cssPath = GAME_VERSION === "old" ? "css/styleForOld.css" : "css/style.css";
-        fs.readFile(path.resolve(__dirname, cssPath), {encoding: "utf-8"}, (error, css) => {
+        fs.readFile(path.resolve(__dirname, "css/style.css"), {encoding: "utf-8"}, (error, css) => {
             if(error){
                 console.error("error:", error);
                 clientLog(win,"error: " + error);

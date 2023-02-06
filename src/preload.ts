@@ -8,44 +8,24 @@ import * as playerDataDisplay from './playerDataDisplay';
 
 // might vary between game versions
 const selectors: {[key: string]: string} = {};
-if(GAME_VERSION == "old"){
-    selectors.sidebarSelector = "#chat-container";
-    selectors.gameMainSelector = "#canvas-outer-container";
-    selectors.gameMainCanvasSelector = "#canvas";
-    selectors.fpsCounterSelector = "#fps"; // there is none
-    selectors.settingsPanelSelector = "#settings";
-    selectors.actionsPanelSelector = "#actions";
-    selectors.integrationButtonsSelector = "#discord-linked, #discord-not-linked";
-    selectors.chatBoxSelector = "#chat-box";
-    selectors.soundEffectVolumeSliderSelector = "#sfx-volume";
-    selectors.loginFormSelector = "#auth-menu";
-    selectors.loginEmailInputSelector = "#sign-in-email";
-    selectors.loginPasswordInputSelector = "#sign-in-password";
-    selectors.loginSubmitButtonSelector = "#existing-user-form > input.auth-button";
-    selectors.playerListTabSelector = "#players";
-    selectors.playerBoxTitleSelector = "#online-players";
-    selectors.playerListBoxSelector = "#players";
-    selectors.specialFocusBehaviorElementsSelector = "#chat-buttons img, " + selectors.gameMainCanvasSelector + ", #overlay-canvas";
-}
-else{
-    selectors.sidebarSelector = "#game\\/sidebar";
-    selectors.gameMainSelector = "#game\\/main";
-    selectors.gameMainCanvasSelector = "#game\\/main\\/screen > canvas";
-    selectors.fpsCounterSelector = "#game\\/main\\/screen\\/fps-count";
-    selectors.settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
-    selectors.actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
-    selectors.integrationButtonsSelector = ".game\\/sidebar\\/content\\/settings\\/integration-button";
-    selectors.chatBoxSelector = "#game\\/sidebar\\/content\\/chat\\/box";
-    selectors.soundEffectVolumeSliderSelector = "#game\\/sidebar\\/content\\/settings\\/sfx-volume";
-    selectors.loginFormSelector = "#auth\\/existing-user\\/form";
-    selectors.loginEmailInputSelector = "#auth\\/existing-user\\/email";
-    selectors.loginPasswordInputSelector = "#auth\\/existing-user\\/password";
-    selectors.loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/button";
-    selectors.playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
-    selectors.playerListTabSelector = "#game\\/sidebar\\/content\\/players";
-    selectors.playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
-    selectors.specialFocusBehaviorElementsSelector = "game\\/sidebar\\/content\\/chat\\/buttons button, " + selectors.gameMainCanvasSelector;
-}
+selectors.sidebarSelector = "#game\\/sidebar";
+selectors.gameMainSelector = "#game\\/main";
+selectors.gameMainCanvasSelector = "#game\\/main\\/screen > canvas";
+selectors.performanceOverlaySelector = "#game\\/main\\/screen\\/performance-info";
+selectors.settingsPanelSelector = "#game\\/sidebar\\/content\\/settings\\/box";
+selectors.actionsPanelSelector = "#game\\/sidebar\\/content\\/actions\\/box";
+selectors.integrationButtonsSelector = ".game\\/sidebar\\/content\\/settings\\/integration-button";
+selectors.chatBoxSelector = "#game\\/sidebar\\/content\\/chat\\/box";
+selectors.soundEffectVolumeSliderSelector = "#game\\/sidebar\\/content\\/settings\\/sfx-volume";
+selectors.loginFormSelector = "#auth\\/existing-user\\/form";
+selectors.loginEmailInputSelector = "#auth\\/existing-user\\/email";
+selectors.loginPasswordInputSelector = "#auth\\/existing-user\\/password";
+selectors.loginSubmitButtonSelector = "#auth\\/existing-user\\/form > input.auth\\/button";
+selectors.playerBoxTitleSelector = "#game\\/sidebar\\/content\\/players\\/count";
+selectors.playerListTabSelector = "#game\\/sidebar\\/content\\/players";
+selectors.playerListBoxSelector = "#game\\/sidebar\\/content\\/players\\/list";
+selectors.specialFocusBehaviorElementsSelector = selectors.gameMainCanvasSelector;
+
 
 
 const pingSoundEffect = new Audio("desktopmmo://assets/audio/ping.mp3");
@@ -62,7 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let gameMainCanvas = document.querySelector<HTMLCanvasElement>(selectors.gameMainCanvasSelector)!;
 
-    const fpsCounter = document.querySelector<HTMLParagraphElement>(selectors.fpsCounterSelector)!;
+    const performanceOverlay = document.querySelector<HTMLParagraphElement>(selectors.performanceOverlaySelector)!;
 
     const settingsPanel = document.querySelector<HTMLDivElement>(selectors.settingsPanelSelector)!;
     const actionsPanel = document.querySelector<HTMLDivElement>(selectors.actionsPanelSelector)!;
@@ -92,11 +72,12 @@ window.addEventListener('DOMContentLoaded', () => {
     
     function checkDisplay(){
         const shouldHideSidebar = stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked;
-        toggleDisplay(unpinButton, stayOnTopInput.checked && hideSidebarWhenPinnedInput.checked);
+        toggleDisplay(unpinButton, shouldHideSidebar);
         toggleDisplay(sidebar, !shouldHideSidebar);
 
-        if(GAME_VERSION === "new")
-            toggleDisplay(fpsCounter, !(stayOnTopInput.checked && hideOverlayWhenPinnedInput.checked));
+        document.getElementById("game")!.classList.toggle("desktop-fullscreen", shouldHideSidebar);
+
+        toggleDisplay(performanceOverlay, !(stayOnTopInput.checked && hideOverlayWhenPinnedInput.checked));
     }
 
     function stayOnTopChange(){
@@ -108,12 +89,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function isElementMessage(element: HTMLParagraphElement){
-        if(GAME_VERSION === "old"){
-            return element.classList.contains("say") || element.classList.contains("wsay") || element.classList.contains("psay") || element.classList.contains("tsay");
-        }
-        else{
-            return element.classList.contains("message")
-        }
+        return element.classList.contains("message")
     }
     
     const settingUi = new SettingsUi(settingsPanel);
@@ -125,9 +101,6 @@ window.addEventListener('DOMContentLoaded', () => {
         "hide-overlay-pinned", "Hide overlays when pinned", hideOverlaysWhenPinnedDefault, (value) => {
             checkDisplay();
     });
-    if(GAME_VERSION === "old"){
-        hideOverlayWhenPinnedInput.hide();
-    }
     
    const hideSidebarWhenPinnedInput =  settingUi.createCheckboxSetting(
         "hide-sidebar-pinned", "Hide sidebar when pinned", hideSidebarWhenPinnedDefault, (value) => {
@@ -205,7 +178,6 @@ window.addEventListener('DOMContentLoaded', () => {
         button.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopImmediatePropagation();
-            event.cancelBubble = true;
             alert("Please use the web client to perform this action(for safety reasons).");
         });
     });
@@ -215,11 +187,10 @@ window.addEventListener('DOMContentLoaded', () => {
     ////////////////////////
     const playerSearchInput = createElement<HTMLInputElement>("input", {type: "search", id: "player-search-input"});
     playerBoxTitle.insertAdjacentElement("afterend", playerSearchInput);
-    const playerEntrySelector = GAME_VERSION === "old" ? "p.players-entry" : "p"
     playerSearchInput.addEventListener("input", () => {
         playerSearchInput.value = playerSearchInput.value.trimStart();
         const searchValue = playerSearchInput.value.toLowerCase();
-        playerListBox.querySelectorAll(playerEntrySelector).forEach((element: Element) => {
+        playerListBox.querySelectorAll("p").forEach((element: Element) => {
             const p = <HTMLParagraphElement>element;
             toggleDisplay(p, p.innerText.toLowerCase().includes(searchValue));
         });
@@ -243,20 +214,11 @@ window.addEventListener('DOMContentLoaded', () => {
     /////////////////
     playerDataDisplay.init(playerListBox);
     const tabChanges = new MutationObserver((mutations) => {
-        if(GAME_VERSION === "old"){
-            const oldClasses = mutations[0].oldValue!;
-            const newClasses = (<HTMLElement>mutations[1].target).classList.toString();
-            if(oldClasses !== newClasses){
-                playerDataDisplay.removeAllDisplays();
-            }
-        }
-        else{
-            if(mutations.length !== 2){
-                playerDataDisplay.removeAllDisplays();
-            }
+        if(mutations.length !== 2){
+            playerDataDisplay.removeAllDisplays();
         }
     });
-    tabChanges.observe(GAME_VERSION === "old" ? sidebar : playersListTab, {
+    tabChanges.observe(playersListTab, {
         attributes: true,
         attributeFilter: ["class"],
         attributeOldValue: true
@@ -266,12 +228,11 @@ window.addEventListener('DOMContentLoaded', () => {
     // basic chat censoring & ping sound effect
     ///////////////////
     const filter = new Filter();
-    const highlightClass = GAME_VERSION === "old" ? "at" : "highlight";
     const newMessageObserver = new MutationObserver((mutationList, observer) => {
         for(const mutation of mutationList) {
             mutation.addedNodes.forEach((node: Node) => {
                 const element = <HTMLParagraphElement>node;
-                if(element.classList.contains(highlightClass) && pingSoundEffectInput.checked){
+                if(element.classList.contains("highlight") && pingSoundEffectInput.checked){
                     pingSoundEffect.play();
                 }
 
@@ -308,9 +269,8 @@ window.addEventListener('DOMContentLoaded', () => {
             loginPasswordInput.focus();
         }
 
-        const loginFormShownClass = GAME_VERSION == "old" ? "existing-user" : "shown";
         const formMutationObserver = new MutationObserver((mutationList) => {
-            if(loginForm.classList.contains(loginFormShownClass) && savedEmail){
+            if(loginForm.classList.contains("shown") && savedEmail){
                 loginPasswordInput.focus();
             }
         });
@@ -336,6 +296,9 @@ window.addEventListener('DOMContentLoaded', () => {
             if(!isInputTypeable(<HTMLInputElement>element)){
                 focusGameCanvas();
             }
+        }
+        else if (element.tagName === "BUTTON"){
+            return;
         }
         else if(!element.matches(selectors.specialFocusBehaviorElementsSelector) && (selection === undefined || selection?.isCollapsed)){
             focusGameCanvas();

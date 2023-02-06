@@ -9,9 +9,6 @@
     "watch": "webpack --watch --mode=development",
     "build": "webpack --mode=development",
     "build-release": "webpack --mode=production",
-    "watch-old": "webpack --watch --mode=development --env version=old",
-    "build-old": "webpack --mode=development --env version=old",
-    "build-old-release": "webpack --mode=production --env version=old",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish"

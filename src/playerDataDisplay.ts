@@ -113,11 +113,11 @@ function togglePlayerInfo(element: HTMLElement, playerName: string){
 }
 
 function getName(element: HTMLElement){
-   return GAME_VERSION === "old" ? element.dataset.username! : element.querySelector<HTMLSpanElement>("span.username")!.innerText.trim();
+   return element.querySelector<HTMLSpanElement>("span.username")!.innerText.trim();
 }
 
 export function init(playerListBox: HTMLDivElement){
-    const playerSelector = GAME_VERSION === "old" ? "p.players-entry" : "p";
+    const playerSelector = "p";
     const newPlayerEvent = new MutationObserver((mutations) => {
         for(const mutation of mutations){
             if(mutation.type === "childList"){

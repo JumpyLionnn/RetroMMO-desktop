@@ -105,3 +105,26 @@ input.desktop[type=checkbox]:checked {
 #game\/sidebar\/content\/players\/list{
     width: 100%;
 }
+
+#game.desktop-fullscreen{
+    justify-content: center;
+    align-items: center;
+}
+
+@media (min-width: 100vh){
+    /* width is greater than the height*/
+    .desktop-fullscreen #game\/main,
+    .desktop-fullscreen #game\/main\/screen{
+        height: 100%!important;
+        width: auto!important;
+    }
+}
+
+@media (min-height: 100vw){
+    /*height is greater than the width*/
+    .desktop-fullscreen #game\/main,
+    .desktop-fullscreen #game\/main\/screen{
+        width: 100%!important;
+        height: auto!important;
+    }
+}
