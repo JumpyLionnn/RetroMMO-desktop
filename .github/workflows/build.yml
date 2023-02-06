@@ -11,14 +11,10 @@ jobs:
         node-version: 16
     - name: install dependencies
       run: npm install
-    - name: build new debug
+    - name: build debug
       run: npm run build
-    - name: build new release
+    - name: build release
       run: npm run build-release
-    - name: build old debug
-      run: npm run build-old
-    - name: build old release
-      run: npm run build-old
     - name: package
       run: npm run make
 
@@ -31,14 +27,10 @@ jobs:
         node-version: 16
     - name: install dependencies
       run: npm install
-    - name: build new debug
+    - name: build debug
       run: npm run build
-    - name: build new release
+    - name: build release
       run: npm run build-release
-    - name: build old debug
-      run: npm run build-old
-    - name: build old release
-      run: npm run build-old
     - name: package
       run: npm run make
 
@@ -51,9 +43,9 @@ jobs:
         node-version: 16
     - name: install dependencies
       run: npm install
-    - name: build new debug
+    - name: build debug
       run: npm run build
-    - name: build new release
+    - name: build release
       run: npm run build-release
     - name: package
       run: npm run make
